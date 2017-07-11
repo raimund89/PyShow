@@ -26,9 +26,9 @@ class PyShowWindow(QMainWindow):
     def __init__(self, args):
         super().__init__()
 
-        self.initUI()
+        self.init_ui()
 
-    def initUI(self):
+    def init_ui(self):
         """Initialize the window settings and all UI components"""
 
         # Some basic setup for the window
@@ -40,14 +40,14 @@ class PyShowWindow(QMainWindow):
         # Adding the different UI components
 
         # Ribbonbar
-        self.initRibbon()
+        self.init_ribbon()
 
         # Statusbar
         # Project manager
         # Editor
         # Preview window
 
-    def initRibbon(self):
+    def init_ribbon(self):
         """Initialize the Ribbon bar with all components in it"""
         self._ribbon = PyShowRibbon(self)
         self.addToolBar(self._ribbon)
