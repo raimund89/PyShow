@@ -28,7 +28,15 @@ class PyShowWindow(QMainWindow):
 
     def initUI(self):
 
+        # Some basic setup for the window
         self.setWindowTitle('PyShow')
         self.resize(1280, 800)
         self.showMaximized()
         self.show()
+
+        # Adding the different UI components
+        # Ribbonbar
+        # Statusbar
+        # Project manager
+        # Editor
+        # Preview window
