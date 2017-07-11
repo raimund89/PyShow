@@ -17,9 +17,11 @@
 """
 
 from PyQt5.QtWidgets import QMainWindow
+from Interface.PyShowRibbon import PyShowRibbon
 
 
 class PyShowWindow(QMainWindow):
+    """The main PyShow window, containing all UI components"""
 
     def __init__(self, args):
         super().__init__()
@@ -27,6 +29,7 @@ class PyShowWindow(QMainWindow):
         self.initUI()
 
     def initUI(self):
+        """Initialize the window settings and all UI components"""
 
         # Some basic setup for the window
         self.setWindowTitle('PyShow')
@@ -35,8 +38,18 @@ class PyShowWindow(QMainWindow):
         self.show()
 
         # Adding the different UI components
+
         # Ribbonbar
+        self.initRibbon()
+
         # Statusbar
         # Project manager
         # Editor
         # Preview window
+
+    def initRibbon(self):
+        """Initialize the Ribbon bar with all components in it"""
+        self._ribbon = PyShowRibbon(self)
+        self.addToolBar(self._ribbon)
+
+        self._ribbon.add_tab('File')
