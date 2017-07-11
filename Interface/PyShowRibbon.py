@@ -17,7 +17,7 @@
 """
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QToolBar, QTabWidget, QWidget, QHBoxLayout
+from PyQt5.QtWidgets import (QToolBar, QTabWidget, QWidget, QHBoxLayout)
 
 
 class PyShowRibbon(QToolBar):
@@ -58,7 +58,44 @@ class PyShowRibbon(QToolBar):
 
     def makeup(self):
         """Style the RibbonBar so it looks cool"""
-        pass
+
+        # The top-most widget
+        self.setStyleSheet("background-color: white;"
+                           "border: none;"
+                           "padding: 0;")
+
+        # The tab view widget
+        self._widget.setStyleSheet("QTabWidget:pane {"
+                                       "background-color: white;"
+                                       "border-top: 1px solid #DDD;"
+                                       "border-bottom: 1px solid #DDD;"
+                                       "top: -1px;"
+                                       "margin: 0px;"
+                                       "padding: 0px;"
+                                       "}"
+                                   "QTabBar { "
+                                       "font-size: 10pt;"
+                                   "}"
+                                   "QTabBar::tab{"
+                                       "background-color: white;"
+                                       "padding: 6px 12px 6px 12px;"
+                                       "margin-right: 4px;"
+                                       "color: #333;"
+                                       "border: 1px solid #FFF;"
+                                       "border-bottom: 1px solid #DDD;"
+                                   "}"
+                                   "QTabBar::tab::hover{"
+                                       "color: #D15E00;"
+                                   "}"
+                                   "QTabBar::tab::selected{"
+                                       "border: 1px solid #DDD;"
+                                       "border-bottom: 1px solid #FFF;"
+                                       "color: #D15E00;"
+                                   "}"
+                                   "QTabWidget::tab-bar{left:2px;}")
+
+        # Style of the tab headers
+        # self._widget
 
 
 class PyShowRibbonTab(QWidget):
@@ -82,10 +119,17 @@ class PyShowRibbonTab(QWidget):
         # Add the layout to the ribbon tab
         self.setLayout(layout)
 
+        self.makeup()
+
     def add_pane(self, name):
         """Add a pane to the tab, which contains controls"""
         pass
 
     def add_spacer(self):
         """Add a spacer between the panes"""
+        pass
+
+    def makeup(self):
+        """Style the tab so it looks cool"""
+
         pass
