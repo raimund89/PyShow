@@ -52,4 +52,6 @@ class PyShowWindow(QMainWindow):
         self._ribbon = PyShowRibbon(self)
         self.addToolBar(self._ribbon)
 
-        self._ribbon.add_tab('File')
+        self._ribbon_file = self._ribbon.add_tab('File')
+        self._ribbon_home = self._ribbon.add_tab('Home')
+        self._ribbon_insert = self._ribbon.add_tab('Insert')
