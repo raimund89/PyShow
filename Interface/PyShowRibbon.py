@@ -39,6 +39,8 @@ class PyShowRibbon(QToolBar):
         self._widget.setMinimumHeight(115)
         self.addWidget(self._widget)
 
+        self.makeup()
+
     def add_tab(self, name):
         """Add a new tab to the RibbonBar"""
         # Make a new ribbon tab widget
@@ -53,6 +55,10 @@ class PyShowRibbon(QToolBar):
         """Set a tab of the RibbonBar as active"""
         # Select a tab by name
         self.setCurrentWidget(self.findChild('tab_' + name))
+
+    def makeup(self):
+        """Style the RibbonBar so it looks cool"""
+        pass
 
 
 class PyShowRibbonTab(QWidget):
