@@ -21,7 +21,7 @@ from PyQt5.QtWidgets import QMainWindow
 
 class PyShowWindow(QMainWindow):
 
-    def __init__(self):
+    def __init__(self, args):
         super().__init__()
 
         self.initUI()

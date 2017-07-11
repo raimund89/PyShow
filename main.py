@@ -23,5 +23,5 @@ from Interface.PyShowWindow import PyShowWindow
 if __name__ == '__main__':
     """Main entry point of PyShow"""
     app = QApplication(sys.argv)
-    w = PyShowWindow()
+    w = PyShowWindow(sys.argv)
     sys.exit(app.exec_())
