@@ -56,3 +56,5 @@ class PyShowWindow(QMainWindow):
         self._ribbon_home = self._ribbon.add_tab('Home')
         self._ribbon_insert = self._ribbon.add_tab('Insert')
         self._ribbon_animations = self._ribbon.add_tab('Animations')
+
+        self._ribbon_file.add_pane('Open/Save')
