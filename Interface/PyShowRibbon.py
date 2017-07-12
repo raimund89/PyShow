@@ -17,7 +17,9 @@
 """
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QToolBar, QTabWidget, QWidget, QHBoxLayout)
+from PyQt5.QtWidgets import (QToolBar, QTabWidget, QWidget, QHBoxLayout,
+                             QSizePolicy, QSpacerItem, QVBoxLayout, QLabel)
+from PyQt5.QtGui import QPainter, QColor
 
 
 class PyShowRibbon(QToolBar):
@@ -135,13 +137,69 @@ class PyShowRibbonTab(QWidget):
 
     def add_pane(self, name):
         """Add a pane to the tab, which contains controls"""
-        pass
 
-    def add_spacer(self):
-        """Add a spacer between the panes"""
-        pass
+        pane = PyShowRibbonPane(self, name)
+        self.layout().addWidget(pane)
+        return pane
 
     def makeup(self):
         """Style the tab so it looks cool"""
 
         pass
+
+
+class PyShowRibbonPane(QWidget):
+
+    def __init__(self, parent, name):
+        super().__init__(parent)
+
+        # The pane consists of a horizontal layout that contains
+        # all the controls, within a vertical layout that
+        # contains this horizontal layout and the name of the pane
+
+        container = QHBoxLayout()
+        container.setSpacing(0)
+        container.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(container)
+
+        vertical_widget = QWidget(self)
+        container.addWidget(vertical_widget)
+        container.addWidget(PyShowRibbonSeparator(self))
+
+        vbox = QVBoxLayout()
+        vbox.setSpacing(0)
+        vbox.setContentsMargins(5, 0, 5, 0)
+        vertical_widget.setLayout(vbox)
+
+        label = QLabel(name)
+        label.setAlignment(Qt.AlignCenter)
+        label.setStyleSheet("color: #666;")
+
+        content = QWidget(self)
+
+        vbox.addWidget(content)
+        vbox.addWidget(label)
+
+        content_layout = QHBoxLayout()
+        content_layout.setAlignment(Qt.AlignLeft)
+        content_layout.setSpacing(0)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.contentLayout = content_layout
+        content.setLayout(content_layout)
+
+
+class PyShowRibbonSeparator(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setMinimumHeight(75)
+        self.setMaximumHeight(75)
+        self.setMinimumWidth(1)
+        self.setMaximumWidth(1)
+        self.setLayout(QHBoxLayout())
+
+    def paintEvent(self, event):
+        qp = QPainter()
+        qp.begin(self)
+        qp.fillRect(event.rect(), QColor("#DDDDDD"))
+        qp.end()
