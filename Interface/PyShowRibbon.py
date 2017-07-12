@@ -49,6 +49,13 @@ class PyShowRibbon(QToolBar):
         tab.setObjectName('tab_' + name)
         # Add the tab to the ribbon
         self._widget.addTab(tab, name)
+
+        # Now add a spacer tab. This is a hack, but the only one
+        # I know of right now that works
+        spacer = QWidget()
+        spacer.setObjectName('spacer_' + name)
+        self._widget.setTabEnabled(self._widget.addTab(spacer, 'spacer'), False)
+
         return tab
 
     def set_active(self, name):
@@ -79,9 +86,7 @@ class PyShowRibbon(QToolBar):
                                    "QTabBar::tab{"
                                        "background-color: white;"
                                        "padding: 6px 12px 6px 12px;"
-                                       "margin-right: 4px;"
                                        "color: #333;"
-                                       "border: 1px solid #FFF;"
                                        "border-bottom: 1px solid #DDD;"
                                    "}"
                                    "QTabBar::tab::hover{"
@@ -91,6 +96,13 @@ class PyShowRibbon(QToolBar):
                                        "border: 1px solid #DDD;"
                                        "border-bottom: 1px solid #FFF;"
                                        "color: #D15E00;"
+                                   "}"
+                                   "QTabBar::tab::disabled {"
+                                       "width: 4px;"
+                                       "margin: 0px;"
+                                       "padding: 0px;"
+                                       "background: transparent;"
+                                       "color: transparent;"
                                    "}"
                                    "QTabWidget::tab-bar{left:2px;}")
 
