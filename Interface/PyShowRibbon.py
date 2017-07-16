@@ -229,6 +229,14 @@ class PyShowRibbonPushButton(QToolButton):
                            "QToolButton:hover {"
                                "border: 1px solid #999;"
                                "background-color: #ffaf87;"
+                           "}"
+                           "QToolButton:pressed {"
+                               "border: 1px solid #666;"
+                               "background-color: #ff9966;"
+                           "}"
+                           "QToolButton:checked {"
+                               "border: 1px solid transparent;"
+                               "background-color: #ffaf87;"
                            "}")
 
     def update_button(self):
