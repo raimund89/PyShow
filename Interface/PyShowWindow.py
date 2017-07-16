@@ -16,8 +16,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from PyQt5.QtWidgets import QMainWindow
-from Interface.PyShowRibbon import PyShowRibbon
+from PyQt5.QtWidgets import QMainWindow, QAction
+from Interface.PyShowRibbon import PyShowRibbon, PyShowRibbonButton
 from Interface.PyShowIcons import PyShowIcons
 
 
@@ -27,9 +27,20 @@ class PyShowWindow(QMainWindow):
     def __init__(self, args):
         super().__init__()
 
+        self._actions = {}
         self._icons = PyShowIcons()
+
+        self.init_actions()
         self.init_ui()
 
+    def init_actions(self):
+        """Initialize all actions that can be performed in this window"""
+        # New file action
+        action = QAction(self._icons.icon("file_new"), "New file", self)
+        action.triggered.connect(self.on_file_new)
+        self.addAction(action)
+        self._actions['file_new'] = action
+        
     def init_ui(self):
         """Initialize the window settings and all UI components"""
 
@@ -59,4 +70,8 @@ class PyShowWindow(QMainWindow):
         self._ribbon_insert = self._ribbon.add_tab('Insert')
         self._ribbon_animations = self._ribbon.add_tab('Animations')
 
-        self._ribbon_file.add_pane('Open/Save')
+        file_opensave = self._ribbon_file.add_pane('Open/Save')
+        file_opensave.add_widget(PyShowRibbonButton(self, self._actions['file_new'], 3))
+
+    def on_file_new(self):
+        pass
