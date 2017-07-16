@@ -16,9 +16,10 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import (QToolBar, QTabWidget, QWidget, QHBoxLayout,
-                             QSizePolicy, QSpacerItem, QVBoxLayout, QLabel)
+                             QSizePolicy, QSpacerItem, QVBoxLayout, QLabel,
+                             QToolButton)
 from PyQt5.QtGui import QPainter, QColor
 
 
@@ -188,6 +189,9 @@ class PyShowRibbonPane(QWidget):
         self.contentLayout = content_layout
         content.setLayout(content_layout)
 
+    def add_widget(self, widget):
+        self.contentLayout.addWidget(widget, 0, Qt.AlignTop)
+
 
 class PyShowRibbonSeparator(QWidget):
     def __init__(self, parent):
@@ -203,3 +207,24 @@ class PyShowRibbonSeparator(QWidget):
         qp.begin(self)
         qp.fillRect(event.rect(), QColor("#DDDDDD"))
         qp.end()
+
+
+class PyShowRibbonButton(QToolButton):
+
+    def __init__(self, owner, action, style):
+        super().__init__(owner)
+
+        self._action = action
+        self.clicked.connect(self._action.trigger)
+        self.update_button()
+        self._action.changed.connect(self.update_button)
+
+        self.setToolButtonStyle(style)
+        self.setIconSize(QSize(32, 32))
+
+    def update_button(self):
+        self.setText(self._action.text())
+        self.setIcon(self._action.icon())
+        self.setEnabled(self._action.isEnabled())
+        self.setCheckable(self._action.isCheckable())
+        self.setChecked(self._action.isChecked())
