@@ -18,6 +18,7 @@
 
 from PyQt5.QtWidgets import QMainWindow
 from Interface.PyShowRibbon import PyShowRibbon
+from Interface.PyShowIcons import PyShowIcons
 
 
 class PyShowWindow(QMainWindow):
@@ -26,6 +27,7 @@ class PyShowWindow(QMainWindow):
     def __init__(self, args):
         super().__init__()
 
+        self._icons = PyShowIcons()
         self.init_ui()
 
     def init_ui(self):
