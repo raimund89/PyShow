@@ -16,7 +16,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from PyQt5.QtWidgets import QMainWindow, QAction
+from PyQt5.QtWidgets import QMainWindow, QAction, QMenu
 from Interface.PyShowRibbon import PyShowRibbon, PyShowRibbonPushButton
 from Interface.PyShowIcons import PyShowIcons
 
@@ -36,10 +36,20 @@ class PyShowWindow(QMainWindow):
     def init_actions(self):
         """Initialize all actions that can be performed in this window"""
         # New file action
-        action = QAction(self._icons.icon("file_new"), "New\nfile", self)
+        action = QAction(self._icons.icon("file_new"), "New\nproject", self)
         action.triggered.connect(self.on_file_new)
         self.addAction(action)
         self._actions['file_new'] = action
+        # Open file action
+        action = QAction(self._icons.icon("file_open"), "Open...", self)
+        action.triggered.connect(self.on_file_open)
+        self.addAction(action)
+        self._actions['file_open'] = action
+        # Save file action
+        action = QAction(self._icons.icon("file_save"), "Save", self)
+        action.triggered.connect(self.on_file_save)
+        self.addAction(action)
+        self._actions['file_save'] = action
         
     def init_ui(self):
         """Initialize the window settings and all UI components"""
@@ -72,6 +82,14 @@ class PyShowWindow(QMainWindow):
 
         file_opensave = self._ribbon_file.add_pane('Open/Save')
         file_opensave.add_widget(PyShowRibbonPushButton(self, self._actions['file_new'], 3))
+        file_opensave.add_widget(PyShowRibbonPushButton(self, self._actions['file_open'], 3))
+        file_opensave.add_widget(PyShowRibbonPushButton(self, self._actions['file_save'], 3))
 
     def on_file_new(self):
+        pass
+
+    def on_file_open(self):
+        pass
+
+    def on_file_save(self):
         pass

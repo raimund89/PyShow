@@ -225,6 +225,7 @@ class PyShowRibbonPushButton(QToolButton):
         self.setStyleSheet("QToolButton {"
                                "border: 1px solid transparent;"
                                "margin: 2px 2px 0px 2px;"
+                               "min-height:70px;"
                            "}"
                            "QToolButton:hover {"
                                "border: 1px solid #999;"
