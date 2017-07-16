@@ -16,10 +16,11 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from PyQt5.QtWidgets import QMainWindow, QAction, QMenu
+from PyQt5.QtWidgets import QMainWindow, QAction, QMenu, QSplitter, QWidget
 from Interface.PyShowRibbon import PyShowRibbon, PyShowRibbonPushButton
 from Interface.PyShowIcons import PyShowIcons
 from Interface.PyShowStatusbar import PyShowStatusbar
+from Interface.PyShowEditor import PyShowEditor
 
 
 class PyShowWindow(QMainWindow):
@@ -75,9 +76,23 @@ class PyShowWindow(QMainWindow):
         self._statusbar = PyShowStatusbar()
         self.setStatusBar(self._statusbar)
 
+        # Divide window with a splitter
+        self._splitter = QSplitter()
+        self._splitter.setStyleSheet("QSplitter::handle {"
+                                         "width: 1px;"
+                                         "border: 1px solid #DDD;"
+                                     "}")
+        self.setCentralWidget(self._splitter)
+
         # Project manager
         # Editor
+        self._editor = PyShowEditor()
+        self._splitter.addWidget(self._editor)
+
         # Preview window
+        self._preview = QWidget()
+        self._preview.setStyleSheet("border: none;background-color: #F9F9F9")
+        self._splitter.addWidget(self._preview)
 
     def init_ribbon(self):
         """Initialize the Ribbon bar with all components in it"""
