@@ -50,6 +50,11 @@ class PyShowWindow(QMainWindow):
         action.triggered.connect(self.on_file_save)
         self.addAction(action)
         self._actions['file_save'] = action
+        # Print file
+        action = QAction(self._icons.icon("file_print"), "Print", self)
+        action.triggered.connect(self.on_file_print)
+        self.addAction(action)
+        self._actions['file_print'] = action
         
     def init_ui(self):
         """Initialize the window settings and all UI components"""
@@ -85,6 +90,9 @@ class PyShowWindow(QMainWindow):
         file_opensave.add_widget(PyShowRibbonPushButton(self, self._actions['file_open'], 3))
         file_opensave.add_widget(PyShowRibbonPushButton(self, self._actions['file_save'], 3))
 
+        file_print = self._ribbon_file.add_pane('Printing')
+        file_print.add_widget(PyShowRibbonPushButton(self, self._actions['file_print'], 3))
+
     def on_file_new(self):
         pass
 
@@ -92,4 +100,7 @@ class PyShowWindow(QMainWindow):
         pass
 
     def on_file_save(self):
+        pass
+
+    def on_file_print(self):
         pass
