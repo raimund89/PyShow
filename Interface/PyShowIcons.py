@@ -27,6 +27,7 @@ class PyShowIcons:
         self.load_icon("file_new")
         self.load_icon("file_open")
         self.load_icon("file_save")
+        self.load_icon("file_print")
 
     def load_icon(self, name):
         self._icons[name] = QIcon()
