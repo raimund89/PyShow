@@ -38,8 +38,8 @@ class PyShowRibbon(QToolBar):
         # To make this toolbar a ribbonbar, the whole toolbar is filled
         # with a tabwidget, that actually contains all buttons and stuff
         self._widget = QTabWidget(self)
-        self._widget.setMaximumHeight(115)
-        self._widget.setMinimumHeight(115)
+        self._widget.setMaximumHeight(125)
+        self._widget.setMinimumHeight(125)
         self.addWidget(self._widget)
 
         self.makeup()
@@ -174,11 +174,11 @@ class PyShowRibbonPane(QWidget):
 
         label = QLabel(name)
         label.setAlignment(Qt.AlignCenter)
-        label.setStyleSheet("color: #666;")
+        label.setStyleSheet("color: #666;margin-bottom:2px;")
 
         content = QWidget(self)
 
-        vbox.addWidget(content)
+        vbox.addWidget(content, 100)
         vbox.addWidget(label)
 
         content_layout = QHBoxLayout()
@@ -196,8 +196,8 @@ class PyShowRibbonPane(QWidget):
 class PyShowRibbonSeparator(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        self.setMinimumHeight(75)
-        self.setMaximumHeight(75)
+        self.setMinimumHeight(85)
+        self.setMaximumHeight(85)
         self.setMinimumWidth(1)
         self.setMaximumWidth(1)
         self.setLayout(QHBoxLayout())
@@ -209,7 +209,7 @@ class PyShowRibbonSeparator(QWidget):
         qp.end()
 
 
-class PyShowRibbonButton(QToolButton):
+class PyShowRibbonPushButton(QToolButton):
 
     def __init__(self, owner, action, style):
         super().__init__(owner)
@@ -221,6 +221,15 @@ class PyShowRibbonButton(QToolButton):
 
         self.setToolButtonStyle(style)
         self.setIconSize(QSize(32, 32))
+
+        self.setStyleSheet("QToolButton {"
+                               "border: 1px solid transparent;"
+                               "margin: 2px 2px 0px 2px;"
+                           "}"
+                           "QToolButton:hover {"
+                               "border: 1px solid #999;"
+                               "background-color: #ffaf87;"
+                           "}")
 
     def update_button(self):
         self.setText(self._action.text())
