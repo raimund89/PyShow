@@ -19,6 +19,7 @@
 from PyQt5.QtWidgets import QMainWindow, QAction, QMenu
 from Interface.PyShowRibbon import PyShowRibbon, PyShowRibbonPushButton
 from Interface.PyShowIcons import PyShowIcons
+from Interface.PyShowStatusbar import PyShowStatusbar
 
 
 class PyShowWindow(QMainWindow):
@@ -71,6 +72,9 @@ class PyShowWindow(QMainWindow):
         self.init_ribbon()
 
         # Statusbar
+        self._statusbar = PyShowStatusbar()
+        self.setStatusBar(self._statusbar)
+
         # Project manager
         # Editor
         # Preview window
