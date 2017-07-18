@@ -18,8 +18,7 @@
 
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import (QToolBar, QTabWidget, QWidget, QHBoxLayout,
-                             QSizePolicy, QSpacerItem, QVBoxLayout, QLabel,
-                             QToolButton)
+                             QVBoxLayout, QLabel, QToolButton)
 from PyQt5.QtGui import QPainter, QColor
 
 
@@ -152,6 +151,7 @@ class PyShowRibbonTab(QWidget):
 
 
 class PyShowRibbonPane(QWidget):
+    """A pane in the ribbon tab, to organize the controls on the tab"""
 
     def __init__(self, parent, name):
         super().__init__(parent)
@@ -192,10 +192,13 @@ class PyShowRibbonPane(QWidget):
         content.setLayout(content_layout)
 
     def add_widget(self, widget):
+        """Add a control to the ribbon pane"""
         self.contentLayout.addWidget(widget, 0, Qt.AlignTop)
 
 
 class PyShowRibbonSeparator(QWidget):
+    """The separator between ribbon panes"""
+
     def __init__(self, parent):
         super().__init__(parent)
         self.setMinimumHeight(85)
@@ -205,6 +208,7 @@ class PyShowRibbonSeparator(QWidget):
         self.setLayout(QHBoxLayout())
 
     def paintEvent(self, event):
+        """Paint the single separator line"""
         qp = QPainter()
         qp.begin(self)
         qp.fillRect(event.rect(), QColor("#DDDDDD"))
@@ -212,6 +216,7 @@ class PyShowRibbonSeparator(QWidget):
 
 
 class PyShowRibbonPushButton(QToolButton):
+    """A simple push button for in the ribbon pane"""
 
     def __init__(self, owner, action, style):
         super().__init__(owner)
@@ -243,6 +248,7 @@ class PyShowRibbonPushButton(QToolButton):
                            "}")
 
     def update_button(self):
+        """Update the button due to an external change"""
         self.setText(self._action.text())
         self.setIcon(self._action.icon())
         self.setEnabled(self._action.isEnabled())
