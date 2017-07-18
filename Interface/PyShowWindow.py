@@ -103,17 +103,17 @@ class PyShowWindow(QMainWindow):
         self._ribbon = PyShowRibbon(self)
         self.addToolBar(self._ribbon)
 
-        self._ribbon_file = self._ribbon.add_tab('File')
-        self._ribbon_home = self._ribbon.add_tab('Home')
-        self._ribbon_insert = self._ribbon.add_tab('Insert')
-        self._ribbon_animations = self._ribbon.add_tab('Animations')
+        self._ribbon.add_tab('File')
+        self._ribbon.add_tab('Home')
+        self._ribbon.add_tab('Insert')
+        self._ribbon.add_tab('Animations')
 
-        file_opensave = self._ribbon_file.add_pane('Open/Save')
+        file_opensave = self._ribbon["File"].add_pane('Open/Save')
         file_opensave.add_widget(PyShowRibbonPushButton(self, self._actions['file_new'], 3))
         file_opensave.add_widget(PyShowRibbonPushButton(self, self._actions['file_open'], 3))
         file_opensave.add_widget(PyShowRibbonPushButton(self, self._actions['file_save'], 3))
 
-        file_print = self._ribbon_file.add_pane('Printing')
+        file_print = self._ribbon["File"].add_pane('Printing')
         file_print.add_widget(PyShowRibbonPushButton(self, self._actions['file_print'], 3))
 
     def on_file_new(self):

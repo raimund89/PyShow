@@ -65,7 +65,7 @@ class PyShowRibbon(QToolBar):
     def set_active(self, name):
         """Set a tab of the RibbonBar as active"""
         # Select a tab by name
-        self.setCurrentWidget(self.findChild('tab_' + name))
+        self.setCurrentWidget(self.findChild(PyShowRibbonTab, 'tab_' + name))
 
     def makeup(self):
         """Style the RibbonBar so it looks cool"""
@@ -110,8 +110,9 @@ class PyShowRibbon(QToolBar):
                                    "}"
                                    "QTabWidget::tab-bar{left:2px;}")
 
-        # Style of the tab headers
-        # self._widget
+    def __getitem__(self, name):
+        """Get a tab by name"""
+        return self.findChild(PyShowRibbonTab, 'tab_' + name)
 
 
 class PyShowRibbonTab(QWidget):
