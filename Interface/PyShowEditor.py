@@ -22,23 +22,25 @@ from PyQt5.QtGui import QPainter, QColor, QTextFormat, QTextCursor
 
 
 class PyShowEditor(QTextEdit):
+    """The main editor for the PyShow software"""
 
     def __init__(self):
         super().__init__()
-        self.lineNumberArea = PyShowEditorLineNumberArea(self)
+        self.line_number_area = PyShowEditorLineNumberArea(self)
 
-        self.document().blockCountChanged.connect(self.updatelinenumberWidth)
+        self.document().blockCountChanged.connect(self.updatelinenumberwidth)
         self.verticalScrollBar().valueChanged.connect(self.updatelinenumbers)
         self.textChanged.connect(self.updatelinenumbers)
         self.cursorPositionChanged.connect(self.updatelinenumbers)
-        
-        self.updatelinenumberWidth()
+
+        self.updatelinenumberwidth()
 
         self.setStyleSheet("border: none;"
                            "font-family: Courier New;"
                            "font-size: 9pt;")
 
-    def linenumberWidth(self):
+    def linenumber_width(self):
+        """Calculate the width of the line number area"""
         digits = 1
         count = max(1, self.document().blockCount())
         while count >= 10:
@@ -47,25 +49,28 @@ class PyShowEditor(QTextEdit):
         space = 25 + self.fontMetrics().width('9') * digits
         return space
 
-    def updatelinenumberWidth(self):
-        self.setViewportMargins(self.linenumberWidth(), 0, 0, 0)
+    def updatelinenumberwidth(self):
+        """Update the viewport from the line number area width"""
+        self.setViewportMargins(self.linenumber_width(), 0, 0, 0)
 
     def updatelinenumbers(self):
+        """Update the line numbers after any change in the viewport"""
         self.verticalScrollBar().setSliderPosition(self.verticalScrollBar().sliderPosition())
 
         rect = self.contentsRect()
-        self.lineNumberArea.update(0, rect.y(), self.lineNumberArea.width(), rect.height())
-        self.updatelinenumberWidth()
+        self.line_number_area.update(0, rect.y(), self.line_number_area.width(), rect.height())
+        self.updatelinenumberwidth()
 
         ychange = self.verticalScrollBar().sliderPosition()
         if ychange:
-            self.lineNumberArea.scroll(0, ychange)
-        
+            self.line_number_area.scroll(0, ychange)
+
         first_block_id = self.getFirstVisibleBlockId()
         if first_block_id == 0 or self.textCursor().block().blockNumber() == first_block_id:
             self.verticalScrollBar().setSliderPosition(ychange - self.document().documentMargin())
 
     def getFirstVisibleBlockId(self):
+        """Get the ID of the first visible text block in the editor"""
         curs = QTextCursor(self.document())
         curs.movePosition(QTextCursor.Start)
 
@@ -83,13 +88,14 @@ class PyShowEditor(QTextEdit):
         return 0
 
     def paintLineNumbers(self, event):
-        painter = QPainter(self.lineNumberArea)
+        """Actually paint the numbers in the line number area"""
+        painter = QPainter(self.line_number_area)
         painter.fillRect(event.rect(), Qt.lightGray)
 
-        blockNumber = self.getFirstVisibleBlockId()
-        block = self.document().findBlockByNumber(blockNumber)
-        if blockNumber > 0:
-            prev_block = self.document().findBlockByNumber(blockNumber - 1)
+        block_number = self.getFirstVisibleBlockId()
+        block = self.document().findBlockByNumber(block_number)
+        if block_number > 0:
+            prev_block = self.document().findBlockByNumber(block_number - 1)
             translate_y = -self.verticalScrollBar().sliderPosition()
         else:
             prev_block = block
@@ -97,10 +103,10 @@ class PyShowEditor(QTextEdit):
 
         top = self.viewport().geometry().top()
 
-        if blockNumber == 0:
+        if block_number == 0:
             additional_margin = self.document().documentMargin() - self.verticalScrollBar().sliderPosition()
         else:
-            additional_margin = self.document().documentLayout().blockBoundingRect(prev_block).translated(0, translate_y).intersected(this().viewport().geometry().height())
+            additional_margin = self.document().documentLayout().blockBoundingRect(prev_block).translated(0, translate_y).intersected(self.viewport().geometry().height())
 
         top += additional_margin
 
@@ -108,44 +114,47 @@ class PyShowEditor(QTextEdit):
 
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
-                number = str(blockNumber + 1)
+                number = str(block_number + 1)
 
-                if self.textCursor().blockNumber() == blockNumber:
+                if self.textCursor().blockNumber() == block_number:
                     painter.setPen(QColor("#090"))
                 else:
                     painter.setPen(QColor("#333"))
 
-                painter.drawText(-5, top, self.lineNumberArea.width(), self.fontMetrics().height(), Qt.AlignRight, number)
+                painter.drawText(-5, top, self.line_number_area.width(), self.fontMetrics().height(), Qt.AlignRight, number)
 
             block = block.next()
             top = bottom
             bottom = top + self.document().documentLayout().blockBoundingRect(block).height()
-            blockNumber += 1
+            block_number += 1
 
-        self.highlightCurrentLine()
+        self.highlight_current_line()
 
     def resizeEvent(self, event):
+        """React to a resize event"""
         super().resizeEvent(event)
 
         contents = self.contentsRect()
-        self.lineNumberArea.setGeometry(QRect(contents.left(), contents.top(), self.linenumberWidth(), contents.height()))
+        self.line_number_area.setGeometry(QRect(contents.left(), contents.top(), self.linenumber_width(), contents.height()))
 
-    def highlightCurrentLine(self):
-        extraSelections = []
+    def highlight_current_line(self):
+        """Highlight the entire active line in the editor area"""
+        extra_selections = []
 
         if not self.isReadOnly():
             selection = QTextEdit.ExtraSelection()
-            lineColor = QColor("#FFFF00")
+            line_color = QColor("#FFFF00")
 
-            selection.format.setBackground(lineColor)
+            selection.format.setBackground(line_color)
             selection.format.setProperty(QTextFormat.FullWidthSelection, True)
             selection.cursor = self.textCursor()
             selection.cursor.clearSelection()
-            extraSelections.append(selection)
-            self.setExtraSelections(extraSelections)
+            extra_selections.append(selection)
+            self.setExtraSelections(extra_selections)
 
 
 class PyShowEditorLineNumberArea(QWidget):
+    """The line number area in the main PyShow editor"""
 
     def __init__(self, editor):
         super().__init__(editor)
@@ -153,7 +162,9 @@ class PyShowEditorLineNumberArea(QWidget):
         self._editor = editor
 
     def sizeHint(self):
-        return QSize(self._editor.linenumberWidth(), 0)
+        """Return the size of the line number area"""
+        return QSize(self._editor.linenumber_width(), 0)
 
     def paintEvent(self, event):
+        """A paint request is triggered, so pass it on"""
         self._editor.paintLineNumbers(event)
