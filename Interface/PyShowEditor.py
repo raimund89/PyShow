@@ -17,8 +17,9 @@
 """
 
 from PyQt5.QtWidgets import QWidget, QTextEdit
-from PyQt5.QtCore import QRect, Qt, QSize
-from PyQt5.QtGui import QPainter, QColor, QTextFormat, QTextCursor
+from PyQt5.QtCore import QRect, Qt, QSize, QRegularExpression
+from PyQt5.QtGui import (QPainter, QColor, QTextFormat, QTextCursor,
+                         QTextCharFormat, QFont, QSyntaxHighlighter)
 
 
 class PyShowEditor(QTextEdit):
@@ -38,6 +39,9 @@ class PyShowEditor(QTextEdit):
         self.setStyleSheet("border: none;"
                            "font-family: Courier New;"
                            "font-size: 9pt;")
+
+        # Now enable the syntax highlighting
+        self._highlighter = PyShowEditorHighlighter(self)
 
     def linenumber_width(self):
         """Calculate the width of the line number area"""
@@ -168,3 +172,41 @@ class PyShowEditorLineNumberArea(QWidget):
     def paintEvent(self, event):
         """A paint request is triggered, so pass it on"""
         self._editor.paintLineNumbers(event)
+
+
+class PyShowEditorHighlighter(QSyntaxHighlighter):
+    """The highlighter class providing the syntax highlighting"""
+
+    # List of keywords
+    keywords = ['text', 'number', 'function']
+    operators = ['+', '-', '*', '/']
+    comments = ['%', '#']
+
+    def __init__(self, editor):
+        super().__init__(editor)
+        self.parent = editor
+        self.highlightingRules = []
+
+        keyword = QTextCharFormat()
+        keyword.setForeground(Qt.darkBlue)
+        keyword.setFontWeight(QFont.Bold)
+
+        for word in self.keywords:
+            pattern = QRegularExpression("\\b" + word + "\\b")
+            rule = HighlightingRule(pattern, keyword)
+            self.highlightingRules.append(rule)
+
+    def highlightBlock(self, text):
+        for rule in self.highlightingRules:
+            matchIterator = rule.pattern.globalMatch(text)
+            while matchIterator.hasNext():
+                match = matchIterator.next()
+                self.setFormat(match.capturedStart(),
+                               match.capturedLength(),
+                               rule.format)
+
+
+class HighlightingRule():
+    def __init__(self, pattern, format):
+        self.pattern = pattern
+        self.format = format
