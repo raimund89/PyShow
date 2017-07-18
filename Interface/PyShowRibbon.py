@@ -57,7 +57,8 @@ class PyShowRibbon(QToolBar):
         # I know of right now that works
         spacer = QWidget()
         spacer.setObjectName('spacer_' + name)
-        self._widget.setTabEnabled(self._widget.addTab(spacer, 'spacer'), False)
+        self._widget.setTabEnabled(self._widget.addTab(spacer, 'spacer'),
+                                   False)
 
         return tab
 

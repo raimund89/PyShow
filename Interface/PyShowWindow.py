@@ -61,7 +61,7 @@ class PyShowWindow(QMainWindow):
         action.triggered.connect(self.on_file_print)
         self.addAction(action)
         self._actions['file_print'] = action
-        
+
     def init_ui(self):
         """Initialize the window settings and all UI components"""
 
@@ -117,13 +117,17 @@ class PyShowWindow(QMainWindow):
         file_print.add_widget(PyShowRibbonPushButton(self, self._actions['file_print'], 3))
 
     def on_file_new(self):
+        """Closing any current project and beginning a new project"""
         pass
 
     def on_file_open(self):
+        """Closing any current project and opening an existing project"""
         pass
 
     def on_file_save(self):
+        """Saving the currently open project"""
         pass
 
     def on_file_print(self):
+        """Open the printing wizard and print the current project"""
         pass
