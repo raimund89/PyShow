@@ -65,8 +65,6 @@ class PyShowProject:
             file.close()
             self.opened = True
             self.set_changed(False)
-        else:
-            QMessageBox.warning(self._mainwindow, "PyShow", "No project was opened!!!", QMessageBox.Ok)
 
     def save(self):
 
@@ -86,8 +84,6 @@ class PyShowProject:
             file.close()
             self.opened = True
             self.set_changed(False)
-        else:
-            QMessageBox.warning(self._mainwindow, "PyShow", "The project was not saved!", QMessageBox.Ok)
 
     def close(self):
 
