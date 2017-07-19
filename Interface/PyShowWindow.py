@@ -93,11 +93,11 @@ class PyShowWindow(QMainWindow):
 
         # Project manager
         # Editor
-        self._editor = PyShowEditor()
+        self.editor = PyShowEditor()
         # The project must be defined here, after the editor has been made
         self._project = PyShowProject(self)
         self._project.new()
-        self._splitter.addWidget(self._editor)
+        self._splitter.addWidget(self.editor)
 
         # Preview window
         self._preview = QWidget()

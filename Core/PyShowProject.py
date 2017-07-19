@@ -16,10 +16,13 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from PyQt5.QtWidgets import QFileDialog, QMessageBox
+# TODO: enable/disable save button when project is opened/closed
+
+from PyQt5.QtWidgets import QFileDialog
 
 
 class PyShowProject:
+    """Class that contains all the project hooks and information"""
 
     def __init__(self, mainwindow):
         self._mainwindow = mainwindow
@@ -28,14 +31,17 @@ class PyShowProject:
         self._lastsaved = ''
         self.opened = False
 
-        self._mainwindow._editor.textChanged.connect(self.textEdited)
+        self._mainwindow.editor.textChanged.connect(self.text_edited)
 
     def new(self):
+        """Start a new project"""
 
         self.close()
         self.opened = True
 
     def open(self):
+        """Open an existing project from file"""
+
         filename = QFileDialog.getOpenFileName(self._mainwindow,
                                                'Open Project',
                                                '',
@@ -49,12 +55,16 @@ class PyShowProject:
             text = file.read()
             file.close()
 
-            self._mainwindow._editor.setText(text)
+            self._mainwindow.editor.setText(text)
 
             self._lastsaved = text
             self.opened = True
 
     def save(self):
+        """Save the existing project, if a project is open"""
+
+        if not self.opened:
+            return
 
         # If no filename is set yet, ask for one
         if not self._filename:
@@ -66,7 +76,7 @@ class PyShowProject:
         # Now save the file, but always check because the user could have
         # canceled
         if self._filename:
-            text = self._mainwindow._editor.toPlainText()
+            text = self._mainwindow.editor.toPlainText()
 
             file = open(self._filename, 'w')
             file.write(text)
@@ -76,28 +86,32 @@ class PyShowProject:
             self.opened = True
 
     def close(self):
+        """Close the project, get the GUI in order after that"""
 
         self._filename = ""
 
-        self._mainwindow._editor.setText('')
+        self._mainwindow.editor.setText('')
 
         self._lastsaved = ""
         self.opened = False
 
     def changed(self):
-        if self._lastsaved == self._mainwindow._editor.toPlainText():
+        """Returns whether the text was changed compared to the last save"""
+
+        if self._lastsaved == self._mainwindow.editor.toPlainText():
             return False
 
         return True
 
-    def textEdited(self):
+    def text_edited(self):
+        """Triggered when text in the editor is changed"""
 
         if self._filename:
             name = self._filename
         else:
             name = 'Untitled'
 
-        if self._lastsaved == self._mainwindow._editor.toPlainText():
+        if self._lastsaved == self._mainwindow.editor.toPlainText():
             self._mainwindow.setWindowTitle('PyShow - ' + name)
         else:
             self._mainwindow.setWindowTitle('PyShow - ' + name + ' *')

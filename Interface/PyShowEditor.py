@@ -226,6 +226,8 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
 
 
 class HighlightingRule():
-    def __init__(self, pattern, format):
+    """A simple structure that contains the pattern and format for a rule"""
+
+    def __init__(self, pattern, formatting):
         self.pattern = pattern
-        self.format = format
+        self.format = formatting
