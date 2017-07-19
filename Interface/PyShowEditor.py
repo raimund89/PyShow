@@ -196,14 +196,6 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
             rule = HighlightingRule(pattern, keyword)
             self.highlightingRules.append(rule)
 
-        # Comments
-        comment = QTextCharFormat()
-        comment.setForeground(Qt.darkGray)
-        comment.setFontItalic(True)
-        pattern = QRegularExpression("#[^\n]*")
-        rule = HighlightingRule(pattern, comment)
-        self.highlightingRules.append(rule)
-
         # Strings
         string = QTextCharFormat()
         string.setForeground(Qt.darkMagenta)
@@ -213,6 +205,14 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
         self.highlightingRules.append(rule)
         pattern = QRegularExpression("\'.*\'")
         rule = HighlightingRule(pattern, string)
+        self.highlightingRules.append(rule)
+
+        # Comments
+        comment = QTextCharFormat()
+        comment.setForeground(Qt.darkGray)
+        comment.setFontItalic(True)
+        pattern = QRegularExpression("#[^\n]*")
+        rule = HighlightingRule(pattern, comment)
         self.highlightingRules.append(rule)
 
     def highlightBlock(self, text):
