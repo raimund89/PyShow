@@ -22,6 +22,7 @@ from Interface.PyShowRibbon import PyShowRibbon, PyShowRibbonPushButton
 from Interface.PyShowIcons import PyShowIcons
 from Interface.PyShowStatusbar import PyShowStatusbar
 from Interface.PyShowEditor import PyShowEditor
+from Interface.PyShowPreview import PyShowPreview
 from Core.PyShowProject import PyShowProject
 
 
@@ -100,9 +101,9 @@ class PyShowWindow(QMainWindow):
         self._splitter.addWidget(self.editor)
 
         # Preview window
-        self._preview = QWidget()
-        self._preview.setStyleSheet("border: none;background-color: #F9F9F9")
+        self._preview = PyShowPreview(self._splitter)
         self._splitter.addWidget(self._preview)
+        self._preview.initialize()
 
     def init_ribbon(self):
         """Initialize the Ribbon bar with all components in it"""
