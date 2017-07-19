@@ -47,19 +47,19 @@ class PyShowProject:
 
     def new(self):
 
-        self._filename = ''
-        self._mainwindow._editor.setText('')
-        self._mainwindow.setWindowTitle('PyShow - Untitled')
+        self.close()
         self.opened = True
         self.set_changed(False)
 
     def open(self):
-        self._filename = QFileDialog.getOpenFileName(self._mainwindow,
-                                                     'Open Project',
-                                                     '',
-                                                     'PyShow Project (*.psp);;All Files(*)')[0]
+        filename = QFileDialog.getOpenFileName(self._mainwindow,
+                                               'Open Project',
+                                               '',
+                                               'PyShow Project (*.psp);;All Files(*)')[0]
 
-        if self._filename:
+        if filename:
+            self.close()
+            self._filename = filename
             file = open(self._filename, 'r')
             self._mainwindow._editor.setText(file.read())
             file.close()
@@ -87,7 +87,7 @@ class PyShowProject:
             self.opened = True
             self.set_changed(False)
         else:
-            QMessageBox.error(self._mainwindow, "PyShow", "The project was not saved!", QMessageBox.Ok)
+            QMessageBox.warning(self._mainwindow, "PyShow", "The project was not saved!", QMessageBox.Ok)
 
     def close(self):
 

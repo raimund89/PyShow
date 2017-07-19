@@ -133,8 +133,6 @@ class PyShowWindow(QMainWindow):
             elif reply == QMessageBox.Yes:
                 self._project.save()
 
-            self._project.close()
-
         self._project.new()
 
     def on_file_open(self):
@@ -147,8 +145,6 @@ class PyShowWindow(QMainWindow):
                 return
             elif reply == QMessageBox.Yes:
                 self._project.save()
-
-            self._project.close()
 
         self._project.open()
 
