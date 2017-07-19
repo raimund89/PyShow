@@ -25,31 +25,15 @@ class PyShowProject:
         self._mainwindow = mainwindow
 
         self._filename = ''
+        self._lastsaved = ''
         self.opened = False
-        self.changed = False
 
-        self._mainwindow._editor.textChanged.connect(self.changeEvent)
-
-    def set_changed(self, val):
-
-        if self.changed is not val:
-            self.changed = val
-
-            if self._filename:
-                name = self._filename
-            else:
-                name = 'Untitled'
-
-            if self.changed:
-                self._mainwindow.setWindowTitle('PyShow - ' + name + ' *')
-            else:
-                self._mainwindow.setWindowTitle('PyShow - ' + name)
+        self._mainwindow._editor.textChanged.connect(self.textEdited)
 
     def new(self):
 
         self.close()
         self.opened = True
-        self.set_changed(False)
 
     def open(self):
         filename = QFileDialog.getOpenFileName(self._mainwindow,
@@ -59,12 +43,16 @@ class PyShowProject:
 
         if filename:
             self.close()
+
             self._filename = filename
             file = open(self._filename, 'r')
-            self._mainwindow._editor.setText(file.read())
+            text = file.read()
             file.close()
+
+            self._mainwindow._editor.setText(text)
+
+            self._lastsaved = text
             self.opened = True
-            self.set_changed(False)
 
     def save(self):
 
@@ -78,20 +66,38 @@ class PyShowProject:
         # Now save the file, but always check because the user could have
         # canceled
         if self._filename:
-            file = open(self._filename, 'w')
             text = self._mainwindow._editor.toPlainText()
+
+            file = open(self._filename, 'w')
             file.write(text)
             file.close()
+
+            self._lastsaved = text
             self.opened = True
-            self.set_changed(False)
 
     def close(self):
 
         self._filename = ""
+
         self._mainwindow._editor.setText('')
+
+        self._lastsaved = ""
         self.opened = False
-        self.set_changed(False)
 
-    def changeEvent(self):
+    def changed(self):
+        if self._lastsaved == self._mainwindow._editor.toPlainText():
+            return False
 
-        self.set_changed(True)
+        return True
+
+    def textEdited(self):
+
+        if self._filename:
+            name = self._filename
+        else:
+            name = 'Untitled'
+
+        if self._lastsaved == self._mainwindow._editor.toPlainText():
+            self._mainwindow.setWindowTitle('PyShow - ' + name)
+        else:
+            self._mainwindow.setWindowTitle('PyShow - ' + name + ' *')
