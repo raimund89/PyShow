@@ -124,6 +124,7 @@ class PyShowWindow(QMainWindow):
 
     def on_file_new(self):
         """Closing any current project and beginning a new project"""
+
         # If we have an open project, first close it
         if self._project.opened and self._project.changed():
             reply = QMessageBox.warning(self, "PyShow", "Do you want to save the current project?\n\nIf you don't save before opening a new project, all changes will be lost!", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
@@ -137,6 +138,7 @@ class PyShowWindow(QMainWindow):
 
     def on_file_open(self):
         """Closing any current project and opening an existing project"""
+
         # If we have an open project, first close it
         if self._project.opened and self._project.changed():
             reply = QMessageBox.warning(self, "PyShow", "Do you want to save the current project?\n\nIf you don't save before opening a new project, all changes will be lost!", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
@@ -156,3 +158,20 @@ class PyShowWindow(QMainWindow):
     def on_file_print(self):
         """Open the printing wizard and print the current project"""
         pass
+
+    def closeEvent(self, event):
+        """Called when user closes the PyShow main window"""
+
+        # If we have an open project, first close it
+        if self._project.opened and self._project.changed():
+            reply = QMessageBox.warning(self, "PyShow", "Do you want to save the current project?\n\nIf you don't save before opening a new project, all changes will be lost!", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+
+            if reply == QMessageBox.Cancel:
+                event.ignore()
+                return
+            elif reply == QMessageBox.Yes:
+                if not self._project.save():
+                    event.ignore()
+                    return
+
+        self._project.close()

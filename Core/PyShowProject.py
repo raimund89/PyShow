@@ -64,7 +64,7 @@ class PyShowProject:
         """Save the existing project, if a project is open"""
 
         if not self.opened:
-            return
+            return True
 
         # If no filename is set yet, ask for one
         if not self._filename:
@@ -84,6 +84,10 @@ class PyShowProject:
 
             self._lastsaved = text
             self.opened = True
+
+            return True
+
+        return False
 
     def close(self):
         """Close the project, get the GUI in order after that"""
