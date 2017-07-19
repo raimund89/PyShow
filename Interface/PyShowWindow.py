@@ -16,11 +16,13 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from PyQt5.QtWidgets import QMainWindow, QAction, QMenu, QSplitter, QWidget
+from PyQt5.QtWidgets import (QMainWindow, QAction, QMenu, QSplitter,
+                             QWidget, QMessageBox)
 from Interface.PyShowRibbon import PyShowRibbon, PyShowRibbonPushButton
 from Interface.PyShowIcons import PyShowIcons
 from Interface.PyShowStatusbar import PyShowStatusbar
 from Interface.PyShowEditor import PyShowEditor
+from Core.PyShowProject import PyShowProject
 
 
 class PyShowWindow(QMainWindow):
@@ -31,6 +33,7 @@ class PyShowWindow(QMainWindow):
 
         self._actions = {}
         self._icons = PyShowIcons()
+        self._project = None
 
         self.init_actions()
         self.init_ui()
@@ -91,6 +94,9 @@ class PyShowWindow(QMainWindow):
         # Project manager
         # Editor
         self._editor = PyShowEditor()
+        # The project must be defined here, after the editor has been made
+        self._project = PyShowProject(self)
+        self._project.new()
         self._splitter.addWidget(self._editor)
 
         # Preview window
@@ -118,15 +124,38 @@ class PyShowWindow(QMainWindow):
 
     def on_file_new(self):
         """Closing any current project and beginning a new project"""
-        pass
+        # If we have an open project, first close it
+        if self._project.opened and self._project.changed:
+            reply = QMessageBox.warning(self, "PyShow", "Do you want to save the current project?\n\nIf you don't save before opening a new project, all changes will be lost!", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+
+            if reply == QMessageBox.Cancel:
+                return
+            elif reply == QMessageBox.Yes:
+                self._project.save()
+
+            self._project.close()
+
+        self._project.new()
 
     def on_file_open(self):
         """Closing any current project and opening an existing project"""
-        pass
+        # If we have an open project, first close it
+        if self._project.opened and self._project.changed:
+            reply = QMessageBox.warning(self, "PyShow", "Do you want to save the current project?\n\nIf you don't save before opening a new project, all changes will be lost!", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+
+            if reply == QMessageBox.Cancel:
+                return
+            elif reply == QMessageBox.Yes:
+                self._project.save()
+
+            self._project.close()
+
+        self._project.open()
 
     def on_file_save(self):
         """Saving the currently open project"""
-        pass
+
+        self._project.save()
 
     def on_file_print(self):
         """Open the printing wizard and print the current project"""
