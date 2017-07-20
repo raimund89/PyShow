@@ -29,6 +29,11 @@ class PyShowEditor(QTextEdit):
         super().__init__()
         self.line_number_area = PyShowEditorLineNumberArea(self)
 
+        self.setMinimumWidth(300)
+        self.setMinimumHeight(300)
+
+        self.setLineWrapMode(QTextEdit.NoWrap)
+
         self.document().blockCountChanged.connect(self.updatelinenumberwidth)
         self.verticalScrollBar().valueChanged.connect(self.updatelinenumbers)
         self.textChanged.connect(self.updatelinenumbers)
@@ -36,9 +41,36 @@ class PyShowEditor(QTextEdit):
 
         self.updatelinenumberwidth()
 
-        self.setStyleSheet("border: none;"
+        self.setStyleSheet("PyShowEditor {"
+                           "border: none;"
                            "font-family: Courier New;"
-                           "font-size: 9pt;")
+                           "font-size: 9pt;"
+                           "}"
+                           "QScrollBar:horizontal{"
+                               "background: #DDD;"
+                               "border: none;"
+                               "padding: 0px 18px 0px 18px;"
+                               "margin-right:2px;"
+                           "}"
+                           "QScrollBar:handle:horizontal {"
+                               "background: white;"
+                               "border: 1px solid #AAA;"
+                               "min-width: 16px;"
+                           "}"
+                           "QScrollBar:add-line:horizontal {"
+                               "background: white;"
+                               "border: 1px solid #AAA;"
+                               "subcontrol-position: right;"
+                               "subcontrol-origin: padding;"
+                               "width: 16px;"
+                           "}"
+                           "QScrollBar:sub-line:horizontal {"
+                               "background: white;"
+                               "border: 1px solid #AAA;"
+                               "subcontrol-position: left;"
+                               "subcontrol-origin: padding;"
+                               "width: 16px;"
+                           "}")
 
         # Now enable the syntax highlighting
         self._highlighter = PyShowEditorHighlighter(self)

@@ -26,6 +26,9 @@ class PyShowPreview(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
 
+        self.setMinimumWidth(300)
+        self.setMinimumHeight(300)
+
         self._splitter = parent
         self._slide = PyShowSlide(self)
 
@@ -54,11 +57,11 @@ class PyShowPreview(QWidget):
         return QRect(x, y, width, height)
 
     def resizeEvent(self, event=None):
-        
+
         rect = self.get_slide_rect()
-        self._slide.setGeometry(rect.x(), 
-                                rect.y(), 
-                                rect.width(), 
+        self._slide.setGeometry(rect.x(),
+                                rect.y(),
+                                rect.width(),
                                 rect.height())
 
     def paintEvent(self, event):
@@ -77,9 +80,9 @@ class PyShowPreview(QWidget):
 
         # Now draw a border around the slide
         qp.setPen(Qt.lightGray)
-        qp.drawRect(QRect(sliderect.x()-1, 
-                          sliderect.y()-1, 
-                          sliderect.width()+1, 
+        qp.drawRect(QRect(sliderect.x()-1,
+                          sliderect.y()-1,
+                          sliderect.width()+1,
                           sliderect.height()+1))
 
         # Finish drawing
@@ -108,7 +111,7 @@ class PyShowSlide(QWidget):
 
         # Define slide area
         rect = self.geometry()
-        
+
         # Draw a rect for the background
         qp.fillRect(QRect(0, 0, rect.width(), rect.height()), QColor("#FFF"))
 

@@ -86,6 +86,7 @@ class PyShowWindow(QMainWindow):
 
         # Divide window with a splitter
         self._splitter = QSplitter()
+        self._splitter.setChildrenCollapsible(False)
         self._splitter.setStyleSheet("QSplitter::handle {"
                                          "width: 1px;"
                                          "border: 1px solid #DDD;"
