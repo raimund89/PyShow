@@ -96,7 +96,7 @@ class PyShowSlide(QWidget):
 
         self._parent = parent
 
-        self._size = (0,0)
+        self._size = (0, 0)
 
     def set_size(self, width, height):
         self._size = (width, height)
