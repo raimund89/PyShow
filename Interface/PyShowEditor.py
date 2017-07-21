@@ -17,9 +17,9 @@
 """
 
 from PyQt5.QtWidgets import QWidget, QTextEdit
-from PyQt5.QtCore import QRect, Qt, QSize, QRegularExpression
-from PyQt5.QtGui import (QPainter, QColor, QTextFormat, QTextCursor,
-                         QTextCharFormat, QFont, QSyntaxHighlighter)
+from PyQt5.QtCore import QRect, Qt, QSize
+from PyQt5.QtGui import QPainter, QColor, QTextFormat, QTextCursor, QFont
+from Core.PyShowParser import PyShowParser, PyShowEditorHighlighter
 
 
 class PyShowEditor(QTextEdit):
@@ -42,9 +42,7 @@ class PyShowEditor(QTextEdit):
         self.updatelinenumberwidth()
 
         self.setStyleSheet("PyShowEditor {"
-                           "border: none;"
-                           "font-family: Courier New;"
-                           "font-size: 9pt;"
+                               "border: none;"
                            "}"
                            "QScrollBar:horizontal{"
                                "background: #DDD;"
@@ -72,8 +70,19 @@ class PyShowEditor(QTextEdit):
                                "width: 16px;"
                            "}")
 
+        # Set tab stop width to 4 characters
+        f = self.font()
+        f.setStyleHint(QFont.Monospace)
+        f.setFamily("Courier New")
+        f.setPointSize(9)
+        self.setFont(f)
+        self.setTabStopWidth(4*self.fontMetrics().width(' '))
+
         # Now enable the syntax highlighting
         self._highlighter = PyShowEditorHighlighter(self)
+
+        # And enable the parser
+        self._parser = PyShowParser(self)
 
     def linenumber_width(self):
         """Calculate the width of the line number area"""
@@ -148,6 +157,8 @@ class PyShowEditor(QTextEdit):
 
         bottom = top + self.document().documentLayout().blockBoundingRect(block).height()
 
+        painter.setFont(self.font())
+
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 number = str(block_number + 1)
@@ -157,7 +168,7 @@ class PyShowEditor(QTextEdit):
                 else:
                     painter.setPen(QColor("#333"))
 
-                painter.drawText(-5, top, self.line_number_area.width(), self.fontMetrics().height(), Qt.AlignRight, number)
+                painter.drawText(-5, top+1, self.line_number_area.width(), self.fontMetrics().height(), Qt.AlignRight, number)
 
             block = block.next()
             top = bottom
@@ -188,6 +199,24 @@ class PyShowEditor(QTextEdit):
             extra_selections.append(selection)
             self.setExtraSelections(extra_selections)
 
+    def wheelEvent(self, event):
+        """Increase/decrease editor font size"""
+        if event.modifiers() & Qt.ControlModifier:
+            f = self.font()
+            s = f.pointSize()
+
+            delta = event.angleDelta().y()
+            if delta > 0:
+                f.setPointSize(s+1)
+            else:
+                if s == 1:
+                    return
+                f.setPointSize(s-1)
+
+            self.setFont(f)
+            self.setTabStopWidth(4*self.fontMetrics().width(' '))
+            self.updatelinenumbers()
+
 
 class PyShowEditorLineNumberArea(QWidget):
     """The line number area in the main PyShow editor"""
@@ -205,61 +234,3 @@ class PyShowEditorLineNumberArea(QWidget):
         """A paint request is triggered, so pass it on"""
         self._editor.paintLineNumbers(event)
 
-
-class PyShowEditorHighlighter(QSyntaxHighlighter):
-    """The highlighter class providing the syntax highlighting"""
-
-    # List of keywords
-    keywords = ['text', 'number', 'function']
-    operators = ['+', '-', '*', '/']
-    comments = ['%', '#']
-
-    def __init__(self, editor):
-        super().__init__(editor)
-        self.parent = editor
-        self.highlightingRules = []
-
-        keyword = QTextCharFormat()
-        keyword.setForeground(Qt.darkBlue)
-        keyword.setFontWeight(QFont.Bold)
-
-        for word in self.keywords:
-            pattern = QRegularExpression("\\b" + word + "\\b")
-            rule = HighlightingRule(pattern, keyword)
-            self.highlightingRules.append(rule)
-
-        # Strings
-        string = QTextCharFormat()
-        string.setForeground(Qt.darkMagenta)
-        string.setFontItalic(True)
-        pattern = QRegularExpression("\".*\"")
-        rule = HighlightingRule(pattern, string)
-        self.highlightingRules.append(rule)
-        pattern = QRegularExpression("\'.*\'")
-        rule = HighlightingRule(pattern, string)
-        self.highlightingRules.append(rule)
-
-        # Comments
-        comment = QTextCharFormat()
-        comment.setForeground(Qt.darkGray)
-        comment.setFontItalic(True)
-        pattern = QRegularExpression("#[^\n]*")
-        rule = HighlightingRule(pattern, comment)
-        self.highlightingRules.append(rule)
-
-    def highlightBlock(self, text):
-        for rule in self.highlightingRules:
-            matchIterator = rule.pattern.globalMatch(text)
-            while matchIterator.hasNext():
-                match = matchIterator.next()
-                self.setFormat(match.capturedStart(),
-                               match.capturedLength(),
-                               rule.format)
-
-
-class HighlightingRule():
-    """A simple structure that contains the pattern and format for a rule"""
-
-    def __init__(self, pattern, formatting):
-        self.pattern = pattern
-        self.format = formatting
