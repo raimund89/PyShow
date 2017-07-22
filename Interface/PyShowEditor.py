@@ -22,7 +22,6 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QPainter, QColor, QTextFormat, QTextCursor, QFont
 from Core.PyShowParser import PyShowParser, PyShowEditorHighlighter
 
-# TODO: copy can be rich text, but pasting must be plain text
 # TODO: indenting of selected rows -> handle TAB on keyPressEvent
 # TODO: Further styling of both scroll bars
 # TODO: move out all the stylesheets to an external stylesheet
@@ -252,6 +251,11 @@ class PyShowEditor(QTextEdit):
             self.updatelinenumbers()
         else:
             super().wheelEvent(event)
+
+    def insertFromMimeData(self, source):
+        """When the user pastes something from the clipboard, convert
+           to plain text before doing that"""
+        self.insertPlainText(source.text())
 
 
 class PyShowEditorLineNumberArea(QWidget):
