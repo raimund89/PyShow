@@ -16,10 +16,17 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
+import math
 from PyQt5.QtWidgets import QWidget, QTextEdit
-from PyQt5.QtCore import QRect, Qt, QSize
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QPainter, QColor, QTextFormat, QTextCursor, QFont
 from Core.PyShowParser import PyShowParser, PyShowEditorHighlighter
+
+# TODO: copy can be rich text, but pasting must be plain text
+# TODO: indenting of selected rows -> handle TAB on keyPressEvent
+# TODO: Further styling of both scroll bars
+# TODO: move out all the stylesheets to an external stylesheet
+# TODO: try to simplify the line number code even more
 
 
 class PyShowEditor(QTextEdit):
@@ -27,19 +34,11 @@ class PyShowEditor(QTextEdit):
 
     def __init__(self):
         super().__init__()
-        self.line_number_area = PyShowEditorLineNumberArea(self)
 
-        self.setMinimumWidth(300)
-        self.setMinimumHeight(300)
-
-        self.setLineWrapMode(QTextEdit.NoWrap)
-
-        self.document().blockCountChanged.connect(self.updatelinenumberwidth)
+        # Connect some signals of various subwidgets to this class
         self.verticalScrollBar().valueChanged.connect(self.updatelinenumbers)
         self.textChanged.connect(self.updatelinenumbers)
         self.cursorPositionChanged.connect(self.updatelinenumbers)
-
-        self.updatelinenumberwidth()
 
         self.setStyleSheet("PyShowEditor {"
                                "border: none;"
@@ -70,13 +69,24 @@ class PyShowEditor(QTextEdit):
                                "width: 16px;"
                            "}")
 
+        # Require a minimal width and height to function
+        self.setMinimumWidth(300)
+        self.setMinimumHeight(300)
+
         # Set tab stop width to 4 characters
-        f = self.font()
-        f.setStyleHint(QFont.Monospace)
-        f.setFamily("Courier New")
-        f.setPointSize(9)
-        self.setFont(f)
+        fnt = self.font()
+        fnt.setStyleHint(QFont.Monospace)
+        fnt.setFamily("Courier New")
+        fnt.setPointSize(9)
+        self.setFont(fnt)
         self.setTabStopWidth(4*self.fontMetrics().width(' '))
+
+        # No wrapping, just extend and show a scrollbar
+        self.setLineWrapMode(QTextEdit.NoWrap)
+
+        # Initialize the linenumber area
+        self.line_number_area = PyShowEditorLineNumberArea(self)
+        self.update_viewport()
 
         # Now enable the syntax highlighting
         self._highlighter = PyShowEditorHighlighter(self)
@@ -84,138 +94,164 @@ class PyShowEditor(QTextEdit):
         # And enable the parser
         self._parser = PyShowParser(self)
 
-    def linenumber_width(self):
-        """Calculate the width of the line number area"""
-        digits = 1
-        count = max(1, self.document().blockCount())
-        while count >= 10:
-            count /= 10
-            digits += 1
-        space = 25 + self.fontMetrics().width('9') * digits
-        return space
-
-    def updatelinenumberwidth(self):
+    def update_viewport(self):
         """Update the viewport from the line number area width"""
-        self.setViewportMargins(self.linenumber_width(), 0, 0, 0)
+        self.setViewportMargins(self.line_number_area.get_width(), 0, 0, 0)
 
     def updatelinenumbers(self):
         """Update the line numbers after any change in the viewport"""
-        self.verticalScrollBar().setSliderPosition(self.verticalScrollBar().sliderPosition())
 
-        rect = self.contentsRect()
-        self.line_number_area.update(0, rect.y(), self.line_number_area.width(), rect.height())
-        self.updatelinenumberwidth()
+        # This is a necessary step to avoid unexpected values for
+        # the scrollbar position
+        self.verticalScrollBar().\
+            setSliderPosition(self.verticalScrollBar().sliderPosition())
 
-        ychange = self.verticalScrollBar().sliderPosition()
-        if ychange:
-            self.line_number_area.scroll(0, ychange)
+        # Update the viewport, then request a paint update
+        # of the line number area
+        self.update_viewport()
+        self.line_number_area.update(0,
+                                     0,
+                                     self.line_number_area.width(),
+                                     self.height())
 
-        first_block_id = self.getFirstVisibleBlockId()
-        if first_block_id == 0 or self.textCursor().block().blockNumber() == first_block_id:
-            self.verticalScrollBar().setSliderPosition(ychange - self.document().documentMargin())
-
-    def getFirstVisibleBlockId(self):
+    def get_first_block_id(self):
         """Get the ID of the first visible text block in the editor"""
+
+        # Ask for a cursor and set it to the beginning of the document
         curs = QTextCursor(self.document())
         curs.movePosition(QTextCursor.Start)
 
+        # The geometry of the QTextEdit
+        rect1 = self.viewport().geometry()
+        translate_y = self.verticalScrollBar().sliderPosition()
+
+        # Loop through the blocks (e.g. lines), and see if it is
+        # visible in the viewport (could even be just a pixel)
         for i in range(0, self.document().blockCount()):
             block = curs.block()
 
-            r1 = self.viewport().geometry()
-            r2 = self.document().documentLayout().blockBoundingRect(block).translated(self.viewport().geometry().x(), self.viewport().geometry().y() - self.verticalScrollBar().sliderPosition()).toRect()
+            # Translate the block's bounding rect with the position
+            # of the vertical scrollbar
+            rect2 = self.document().documentLayout().blockBoundingRect(block).\
+                translated(rect1.x(), rect1.y() - translate_y).toRect()
 
-            if r1.contains(r2, True):
+            # If the block is indeed completely visible in the viewport,
+            # this is the first visible block, so return the index
+            if rect1.intersects(rect2):
                 return i
 
+            # Otherwise move to the next block and repeat
             curs.movePosition(QTextCursor.NextBlock)
 
         return 0
 
-    def paintLineNumbers(self, event):
+    def paint_line_numbers(self, event):
         """Actually paint the numbers in the line number area"""
+
+        # Get the painter instance for the line number area,
+        # fill the line number area background and set it's font
         painter = QPainter(self.line_number_area)
         painter.fillRect(event.rect(), Qt.lightGray)
-
-        block_number = self.getFirstVisibleBlockId()
-        block = self.document().findBlockByNumber(block_number)
-        if block_number > 0:
-            prev_block = self.document().findBlockByNumber(block_number - 1)
-            translate_y = -self.verticalScrollBar().sliderPosition()
-        else:
-            prev_block = block
-            translate_y = 0
-
-        top = self.viewport().geometry().top()
-
-        if block_number == 0:
-            additional_margin = self.document().documentMargin() - self.verticalScrollBar().sliderPosition()
-        else:
-            additional_margin = self.document().documentLayout().blockBoundingRect(prev_block).translated(0, translate_y).intersected(self.viewport().geometry().height())
-
-        top += additional_margin
-
-        bottom = top + self.document().documentLayout().blockBoundingRect(block).height()
-
         painter.setFont(self.font())
 
+        # Often used variables here to make the script more readable
+        layout = self.document().documentLayout()
+        top = self.viewport().geometry().top()
+        translate_y = self.verticalScrollBar().sliderPosition()
+
+        # Find the first visible block
+        block_number = self.get_first_block_id()
+        block = self.document().findBlockByNumber(block_number)
+
+        # Determine the additional margin caused by the document margins
+        # and any scrolling down. The scrolling needs to be taken into
+        # account in all cases
+        additional_margin = -translate_y
+        if block_number > 0:
+            # If block_number>0 we must have scrolled down, so
+            # compensate for that
+            rect = layout.blockBoundingRect(block.previous())
+            additional_margin += rect.y() + rect.height()
+        else:
+            additional_margin += self.document().documentMargin()
+
+        # Correct top and set bottom value
+        top += additional_margin
+        bottom = top + layout.blockBoundingRect(block).height()
+
+        # For every block that is valid and has a top inside the viewport
         while block.isValid() and top <= event.rect().bottom():
+            # If it is a visible block and it's bottom is
+            # also inside the viewport
             if block.isVisible() and bottom >= event.rect().top():
                 number = str(block_number + 1)
 
+                # The current line has a different color
                 if self.textCursor().blockNumber() == block_number:
                     painter.setPen(QColor("#090"))
                 else:
                     painter.setPen(QColor("#333"))
 
-                painter.drawText(-5, top+1, self.line_number_area.width(), self.fontMetrics().height(), Qt.AlignRight, number)
+                painter.drawText(-5,
+                                 top+1,
+                                 self.line_number_area.width(),
+                                 self.fontMetrics().height(),
+                                 Qt.AlignRight,
+                                 number)
 
+            # Move to the next block
             block = block.next()
             top = bottom
-            bottom = top + self.document().documentLayout().blockBoundingRect(block).height()
+            bottom = top + layout.blockBoundingRect(block).height()
             block_number += 1
 
         self.highlight_current_line()
 
     def resizeEvent(self, event):
         """React to a resize event"""
+
+        # The QTextEdit should act on the event like it normally would
         super().resizeEvent(event)
 
-        contents = self.contentsRect()
-        self.line_number_area.setGeometry(QRect(contents.left(), contents.top(), self.linenumber_width(), contents.height()))
+        # The line number area has to be resized as well
+        self.line_number_area.setGeometry(0,
+                                          0,
+                                          self.line_number_area.get_width(),
+                                          self.height())
 
     def highlight_current_line(self):
         """Highlight the entire active line in the editor area"""
-        extra_selections = []
 
-        if not self.isReadOnly():
-            selection = QTextEdit.ExtraSelection()
-            line_color = QColor("#FFFF00")
-
-            selection.format.setBackground(line_color)
-            selection.format.setProperty(QTextFormat.FullWidthSelection, True)
-            selection.cursor = self.textCursor()
-            selection.cursor.clearSelection()
-            extra_selections.append(selection)
-            self.setExtraSelections(extra_selections)
+        # Make an extraSelection, set it's formatting properties,
+        # and apply it to the entire line under the cursor
+        selection = QTextEdit.ExtraSelection()
+        selection.format.setBackground(QColor("#FFFF60"))
+        selection.format.setProperty(QTextFormat.FullWidthSelection, True)
+        selection.cursor = self.textCursor()
+        selection.cursor.clearSelection()  # No multi-line selections
+        self.setExtraSelections([selection])
 
     def wheelEvent(self, event):
         """Increase/decrease editor font size"""
         if event.modifiers() & Qt.ControlModifier:
-            f = self.font()
-            s = f.pointSize()
+            fnt = self.font()
+            fntsize = fnt.pointSize()
 
             delta = event.angleDelta().y()
             if delta > 0:
-                f.setPointSize(s+1)
-            else:
-                if s == 1:
+                if fntsize == 72:  # Larger than this doesn't make any sense
                     return
-                f.setPointSize(s-1)
+                fnt.setPointSize(fntsize+1)
+            else:
+                if fntsize == 1:  # Point size of 0 is not supported
+                    return
+                fnt.setPointSize(fntsize-1)
 
-            self.setFont(f)
+            self.setFont(fnt)
             self.setTabStopWidth(4*self.fontMetrics().width(' '))
             self.updatelinenumbers()
+        else:
+            super().wheelEvent(event)
 
 
 class PyShowEditorLineNumberArea(QWidget):
@@ -226,11 +262,15 @@ class PyShowEditorLineNumberArea(QWidget):
 
         self._editor = editor
 
+    def get_width(self):
+        """Calculate the width of the line number area"""
+        digits = math.floor(math.log10(self._editor.document().blockCount()))+1
+        return 25 + self._editor.fontMetrics().width('9') * digits
+
     def sizeHint(self):
         """Return the size of the line number area"""
-        return QSize(self._editor.linenumber_width(), 0)
+        return QSize(self.get_width(), 0)
 
     def paintEvent(self, event):
         """A paint request is triggered, so pass it on"""
-        self._editor.paintLineNumbers(event)
-
+        self._editor.paint_line_numbers(event)
