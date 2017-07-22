@@ -20,6 +20,7 @@ from PyQt5.QtGui import QIcon, QPixmap
 
 
 class PyShowIcons:
+    """Container for all icons needed by PyShow"""
 
     def __init__(self):
         self._icons = {}
@@ -30,11 +31,14 @@ class PyShowIcons:
         self.load_icon("file_print")
 
     def load_icon(self, name):
+        """Load an icon from file"""
         self._icons[name] = QIcon()
-        self._icons[name].addPixmap(QPixmap("Icons/"+name+"_32.png"), QIcon.Normal)
+        self._icons[name].addPixmap(QPixmap("Icons/"+name+"_32.png"),
+                                    QIcon.Normal)
 
     def icon(self, name):
+        """Returns the icon with the specified name"""
         try:
             return self._icons[name]
         except KeyError:
-            print("Icon " +name+ " not found")
+            print("Icon " + name + " not found")

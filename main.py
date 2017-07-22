@@ -21,7 +21,7 @@ from PyQt5.QtWidgets import QApplication
 from Interface.PyShowWindow import PyShowWindow
 
 if __name__ == '__main__':
-    """Main entry point of PyShow"""
+    # Main entry point of PyShow
     app = QApplication(sys.argv)
     w = PyShowWindow(sys.argv)
     sys.exit(app.exec_())

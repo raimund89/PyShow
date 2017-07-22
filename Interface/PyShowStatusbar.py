@@ -20,6 +20,7 @@ from PyQt5.QtWidgets import QStatusBar
 
 
 class PyShowStatusbar(QStatusBar):
+    """The statusbar in the PyShow main window"""
 
     def __init__(self):
         super().__init__()

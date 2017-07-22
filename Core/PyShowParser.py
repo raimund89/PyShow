@@ -22,6 +22,7 @@ from PyQt5.QtGui import QTextCharFormat, QFont, QSyntaxHighlighter
 
 
 class PyShowParser():
+    """Parser for the PyShow language"""
 
     def __init__(self, editor):
         self._editor = editor
@@ -69,10 +70,11 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
         self.highlightingRules.append(rule)
 
     def highlightBlock(self, text):
+        """Process the given text using the highlighting rules"""
         for rule in self.highlightingRules:
-            matchIterator = rule.pattern.globalMatch(text)
-            while matchIterator.hasNext():
-                match = matchIterator.next()
+            iterator = rule.pattern.globalMatch(text)
+            while iterator.hasNext():
+                match = iterator.next()
                 self.setFormat(match.capturedStart(),
                                match.capturedLength(),
                                rule.format)

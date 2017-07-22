@@ -22,6 +22,7 @@ from PyQt5.QtCore import QRect, Qt
 
 
 class PyShowPreview(QWidget):
+    """The preview area in the PyShow window"""
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -33,6 +34,7 @@ class PyShowPreview(QWidget):
         self._slide = PyShowSlide(self)
 
     def initialize(self):
+        """Initialize the preview size (and splitter width) and slide size"""
         rect = self._splitter.geometry()
         self.setGeometry(0, 0, rect.width()*0.75, rect.height())
 
@@ -40,6 +42,7 @@ class PyShowPreview(QWidget):
         self._slide.set_size(1920, 1080)
 
     def get_slide_rect(self):
+        """Returns the geometry of the slide in the preview"""
 
         # Define slide area
         rect = self.geometry()
@@ -57,6 +60,7 @@ class PyShowPreview(QWidget):
         return QRect(x, y, width, height)
 
     def resizeEvent(self, event=None):
+        """Called when the preview needs to be resized"""
 
         rect = self.get_slide_rect()
         self._slide.setGeometry(rect.x(),
@@ -65,8 +69,10 @@ class PyShowPreview(QWidget):
                                 rect.height())
 
     def paintEvent(self, event):
-        qp = QPainter()
-        qp.begin(self)
+        """Called when the preview needs to be updated"""
+
+        painter = QPainter()
+        painter.begin(self)
 
         # Define slide area
         rect = self.geometry()
@@ -76,20 +82,21 @@ class PyShowPreview(QWidget):
         gradient = QLinearGradient(0, 0, 0, rect.height())
         gradient.setColorAt(0, Qt.white)
         gradient.setColorAt(1, QColor("#FAFAFA"))
-        qp.fillRect(QRect(0, 0, rect.width(), rect.height()), gradient)
+        painter.fillRect(QRect(0, 0, rect.width(), rect.height()), gradient)
 
         # Now draw a border around the slide
-        qp.setPen(Qt.lightGray)
-        qp.drawRect(QRect(sliderect.x()-1,
-                          sliderect.y()-1,
-                          sliderect.width()+1,
-                          sliderect.height()+1))
+        painter.setPen(Qt.lightGray)
+        painter.drawRect(QRect(sliderect.x()-1,
+                               sliderect.y()-1,
+                               sliderect.width()+1,
+                               sliderect.height()+1))
 
         # Finish drawing
-        qp.end()
+        painter.end()
 
 
 class PyShowSlide(QWidget):
+    """The actual slide inside the preview widget"""
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -99,21 +106,28 @@ class PyShowSlide(QWidget):
         self._size = (0, 0)
 
     def set_size(self, width, height):
+        """Set the slide size in pixels"""
         self._size = (width, height)
         self._parent.resizeEvent()
 
     def size(self):
+        """Returns the slide size in pixels"""
         return self._size
 
     def paintEvent(self, event):
-        qp = QPainter()
-        qp.begin(self)
+        """Called when the slide preview needs to be updated"""
+        painter = QPainter()
+        painter.begin(self)
 
         # Define slide area
         rect = self.geometry()
 
         # Draw a rect for the background
-        qp.fillRect(QRect(0, 0, rect.width(), rect.height()), QColor("#FFF"))
+        painter.fillRect(QRect(0,
+                               0,
+                               rect.width(),
+                               rect.height()),
+                         QColor("#FFF"))
 
         # Finish drawing
-        qp.end()
+        painter.end()
