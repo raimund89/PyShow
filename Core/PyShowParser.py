@@ -20,6 +20,19 @@ from pyparsing import Word, Optional, ParseException
 from PyQt5.QtCore import Qt, QRegularExpression
 from PyQt5.QtGui import QTextCharFormat, QFont, QSyntaxHighlighter
 
+sectionList = ["beginTemplate",
+               "endTemplate",
+               "beginShow",
+               "endShow",
+               ]
+
+functionList = ["setText",
+                "addTextBlock",
+                "newSlide"
+                ]
+
+actionList = ["pause"]
+
 
 class PyShowParser():
     """Parser for the PyShow language"""
@@ -32,7 +45,6 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
     """The highlighter class providing the syntax highlighting"""
 
     # List of keywords
-    keywords = ['text', 'number', 'function']
     operators = ['+', '-', '*', '/']
     comments = ['%', '#']
 
@@ -45,10 +57,36 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
         keyword.setForeground(Qt.darkBlue)
         keyword.setFontWeight(QFont.Bold)
 
-        for word in self.keywords:
+        for word in sectionList:
             pattern = QRegularExpression("\\b" + word + "\\b")
             rule = HighlightingRule(pattern, keyword)
             self.highlightingRules.append(rule)
+
+        keyword = QTextCharFormat()
+        keyword.setForeground(Qt.blue)
+        keyword.setFontWeight(QFont.Bold)
+
+        for word in functionList:
+            pattern = QRegularExpression("\\b" + word + "\\b")
+            rule = HighlightingRule(pattern, keyword)
+            self.highlightingRules.append(rule)
+
+        keyword = QTextCharFormat()
+        keyword.setForeground(Qt.darkGreen)
+        keyword.setFontWeight(QFont.Bold)
+
+        for word in actionList:
+            pattern = QRegularExpression("\\b" + word + "\\b")
+            rule = HighlightingRule(pattern, keyword)
+            self.highlightingRules.append(rule)
+
+        # Integers
+        comment = QTextCharFormat()
+        comment.setForeground(Qt.red)
+        comment.setFontItalic(True)
+        pattern = QRegularExpression("[0-9]")
+        rule = HighlightingRule(pattern, comment)
+        self.highlightingRules.append(rule)
 
         # Strings
         string = QTextCharFormat()
