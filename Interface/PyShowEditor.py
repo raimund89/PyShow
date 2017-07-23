@@ -22,7 +22,6 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QPainter, QColor, QTextFormat, QTextCursor, QFont
 from Core.PyShowParser import PyShowParser, PyShowEditorHighlighter
 
-# TODO: indenting of selected rows -> handle TAB on keyPressEvent
 # TODO: Further styling of both scroll bars
 # TODO: move out all the stylesheets to an external stylesheet
 # TODO: try to simplify the line number code even more
@@ -256,6 +255,87 @@ class PyShowEditor(QTextEdit):
         """When the user pastes something from the clipboard, convert
            to plain text before doing that"""
         self.insertPlainText(source.text())
+
+    def keyPressEvent(self, event):
+        """If the user uses TAB, indent lines instead of replace by a TAB"""
+
+        if event.key() != Qt.Key_Tab and event.key() != Qt.Key_Backtab:
+            super().keyPressEvent(event)
+            return
+
+        # Get the current cursor
+        cursor = self.textCursor()
+
+        # If nothing is selected, just add or remove a TAB at the beginning
+        # of the line
+        if not cursor.hasSelection():
+                cursor.movePosition(QTextCursor.StartOfBlock,
+                                    QTextCursor.MoveAnchor)
+
+                if event.key() == Qt.Key_Tab:
+                    cursor.insertText("\t")
+                elif event.key() == Qt.Key_Backtab:
+                    # Select first character to see if it is a TAB
+                    cursor.movePosition(QTextCursor.NextCharacter,
+                                        QTextCursor.KeepAnchor)
+
+                    if cursor.selectedText() == "\t":
+                        cursor.removeSelectedText()
+                return
+
+        # We have a selection, so first get the entire selection
+        start_pos = cursor.anchor()
+        end_pos = cursor.position()
+
+        # If user selected from bottom to top, switch the two,
+        # we work from bottom to top
+        if start_pos > end_pos:
+            start_pos, end_pos = end_pos, start_pos
+
+        cursor.setPosition(end_pos, QTextCursor.MoveAnchor)
+        end_block = cursor.block().blockNumber()
+
+        cursor.setPosition(start_pos, QTextCursor.MoveAnchor)
+        start_block = cursor.block().blockNumber()
+
+        # Let all the changes be in one editing block, so one single
+        # 'Undo'/'Redo' action will change all of them at the same time
+        cursor.beginEditBlock()
+
+        for i in range(0, end_block-start_block+1):
+            cursor.movePosition(QTextCursor.StartOfBlock,
+                                QTextCursor.MoveAnchor)
+
+            if event.key() == Qt.Key_Tab:
+                cursor.insertText("\t")
+            elif event.key() == Qt.Key_Backtab:
+                if not cursor.atBlockEnd():
+                    # Select first character to see if it is a TAB
+                    cursor.movePosition(QTextCursor.NextCharacter,
+                                        QTextCursor.KeepAnchor)
+
+                    print(cursor.selectedText())
+                    if cursor.selectedText() == "\t":
+                        cursor.removeSelectedText()
+
+            cursor.movePosition(QTextCursor.NextBlock,
+                                QTextCursor.MoveAnchor)
+
+        cursor.endEditBlock()
+
+        # Now we are going to completely select all the lines that
+        # were changed from beginning to end
+
+        cursor.setPosition(start_pos, QTextCursor.MoveAnchor)
+        cursor.movePosition(QTextCursor.StartOfBlock, QTextCursor.MoveAnchor)
+
+        while cursor.block().blockNumber() < end_block:
+            cursor.movePosition(QTextCursor.NextBlock, QTextCursor.KeepAnchor)
+
+        cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
+
+        # Finally, set the new cursor
+        self.setTextCursor(cursor)
 
 
 class PyShowEditorLineNumberArea(QWidget):
