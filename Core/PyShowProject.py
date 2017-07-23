@@ -58,6 +58,7 @@ class PyShowProject:
             self._mainwindow.editor.setText(text)
 
             self._lastsaved = text
+            self.text_edited()
             self.opened = True
 
     def save(self):
@@ -83,6 +84,7 @@ class PyShowProject:
             file.close()
 
             self._lastsaved = text
+            self.text_edited()
             self.opened = True
 
             return True
@@ -115,7 +117,7 @@ class PyShowProject:
         else:
             name = 'Untitled'
 
-        if self._lastsaved == self._mainwindow.editor.toPlainText():
+        if not self.changed():
             self._mainwindow.setWindowTitle('PyShow - ' + name)
         else:
             self._mainwindow.setWindowTitle('PyShow - ' + name + ' *')
