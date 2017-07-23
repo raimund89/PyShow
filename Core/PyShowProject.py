@@ -121,3 +121,9 @@ class PyShowProject:
             self._mainwindow.setWindowTitle('PyShow - ' + name)
         else:
             self._mainwindow.setWindowTitle('PyShow - ' + name + ' *')
+
+    def name(self):
+        if self._filename:
+            return self._filename
+        else:
+            return 'Untitled'

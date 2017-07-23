@@ -135,6 +135,11 @@ class PyShowWindow(QMainWindow):
                 return
             elif reply == QMessageBox.Yes:
                 self._project.save()
+        elif self._project.opened and self._project.name() != "Untitled":
+            reply = QMessageBox.warning(self, "PyShow", "Are you sure you want to\nclose the current project?", QMessageBox.Yes | QMessageBox.No)
+
+            if reply == QMessageBox.No:
+                return
 
         self._project.new()
 
