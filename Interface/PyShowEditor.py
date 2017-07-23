@@ -20,7 +20,7 @@ import math
 from PyQt5.QtWidgets import QWidget, QTextEdit
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QPainter, QColor, QTextFormat, QTextCursor, QFont
-from Core.PyShowParser import PyShowParser, PyShowEditorHighlighter
+from Core.PyShowLanguage import PyShowParser, PyShowEditorHighlighter
 
 # TODO: Further styling of both scroll bars
 # TODO: move out all the stylesheets to an external stylesheet
