@@ -54,10 +54,10 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
         string = QTextCharFormat()
         string.setForeground(Qt.darkMagenta)
         string.setFontItalic(True)
-        pattern = QRegularExpression("\".*\"")
+        pattern = QRegularExpression("\".*?\"")
         rule = HighlightingRule(pattern, string)
         self.highlightingRules.append(rule)
-        pattern = QRegularExpression("\'.*\'")
+        pattern = QRegularExpression("\'.*?\'")
         rule = HighlightingRule(pattern, string)
         self.highlightingRules.append(rule)
 
