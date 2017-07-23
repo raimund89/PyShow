@@ -1,0 +1,12 @@
+beginTemplate('TitlePage')
+{
+	addTextBlock('Title', 'Example Title', fontname='Courier New', fontsize=24, decoration='biu', alignment='left')
+}
+
+beginShow()
+{
+	newSlide('TitlePage')
+	setText('Title', 'Introduction')
+	pause()
+	setText('Title', 'Contents')
+}
