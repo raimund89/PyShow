@@ -16,15 +16,15 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from pyparsing import (Word, ParseException, alphas, nums, Forward, alphanums,
-                       delimitedList, Literal, Group, Optional)
+from pyparsing import (Word, ParseException, alphas, nums, Forward, StringEnd,
+                       delimitedList, Literal, Group, Optional, quotedString,
+                       removeQuotes, restOfLine)
 from PyQt5.QtCore import Qt, QRegularExpression
 from PyQt5.QtGui import QTextCharFormat, QFont, QSyntaxHighlighter
 
-# TODO: parser currently allows for random text after the right parenthesis
 # TODO: function that tells the editor which lines have errors/warnings
 # TODO: an actual parsing code
-# TODO: empty lines are currently also parsed, this is not necessary
+# TODO: section functions like beginTemplate() should be parsed as blocks
 
 sectionList = ["beginTemplate",
                "endTemplate",
@@ -49,26 +49,32 @@ class PyShowParser():
         self._editor.textChanged.connect(self.parse)
 
         identifier = Word(alphas + "_", alphas + nums + "_")
-        squote = Literal("'").suppress()
-        dquote = Literal('"').suppress()
         equal = Literal("=").suppress()
-        string = (squote | dquote) + Word(alphanums + " ") + (squote | dquote)
-        integer = Word(nums)
+        string = quotedString.addParseAction(removeQuotes)
+        integer = Word(nums).setParseAction(lambda s, l, t: [int(t[0])])
         setting = Group(identifier + equal + (integer | string))
         functor = identifier
+        comment = (Literal("# ").addParseAction(lambda: ['comment']) +
+                   restOfLine)
 
         self._expression = Forward()
 
         arg = Group(self._expression) | integer | string | setting
         args = delimitedList(arg)
 
-        self._expression << functor + Group(Literal("(").suppress() +
-                                            Optional(args) +
-                                            Literal(")").suppress())
+        self._expression << ((functor +
+                              Group(Literal("(").suppress() +
+                                    Optional(args) +
+                                    Literal(")").suppress()) +
+                              Optional(comment) +
+                              StringEnd()) | (comment + StringEnd()))
 
     def parse(self):
         for line in self._editor.toPlainText().split('\n'):
             print(line)
+            if not line.strip():
+                continue
+
             try:
                 parsed = self._expression.parseString(line)
                 print(parsed)
