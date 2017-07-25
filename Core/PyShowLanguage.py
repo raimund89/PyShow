@@ -16,15 +16,16 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from pyparsing import (Word, ParseException, alphas, nums, Forward, StringEnd,
-                       delimitedList, Literal, Group, Optional, quotedString,
-                       removeQuotes, restOfLine)
+from pyparsing import (Word, ParseException, alphas, nums, alphanums, Forward,
+                       delimitedList, Literal, Group, Optional, OneOrMore,
+                       quotedString, removeQuotes, Keyword, nestedExpr,
+                       ParseFatalException, restOfLine)
 from PyQt5.QtCore import Qt, QRegularExpression
 from PyQt5.QtGui import QTextCharFormat, QFont, QSyntaxHighlighter
 
 # TODO: function that tells the editor which lines have errors/warnings
 # TODO: an actual parsing code
-# TODO: section functions like beginTemplate() should be parsed as blocks
+# TODO: style the parsing output as a dict/array combi for easy use
 
 sectionList = ["beginTemplate",
                "endTemplate",
@@ -48,38 +49,68 @@ class PyShowParser():
 
         self._editor.textChanged.connect(self.parse)
 
-        identifier = Word(alphas + "_", alphas + nums + "_")
+        identifier = Word(alphas + "_", alphanums + "_")
         equal = Literal("=").suppress()
         string = quotedString.addParseAction(removeQuotes)
         integer = Word(nums).setParseAction(lambda s, l, t: [int(t[0])])
         setting = Group(identifier + equal + (integer | string))
         functor = identifier
-        comment = (Literal("# ").addParseAction(lambda: ['comment']) +
-                   restOfLine)
+        comment = Group(Literal("# ") + restOfLine).addParseAction(lambda s, l, t: {'comment': t[0][1]})
 
         self._expression = Forward()
 
-        arg = Group(self._expression) | integer | string | setting
+        arg = integer | string | delimitedList(setting).addParseAction(self.format_settings)
         args = delimitedList(arg)
 
-        self._expression << ((functor +
-                              Group(Literal("(").suppress() +
-                                    Optional(args) +
-                                    Literal(")").suppress()) +
-                              Optional(comment) +
-                              StringEnd()) | (comment + StringEnd()))
+        normalline = ((functor +
+                       Group(Literal("(").suppress() +
+                             Optional(args) +
+                             Literal(")").suppress()) +
+                       Optional(comment)) | comment)
+
+        template_begin = (Keyword("beginTemplate") +
+                          Group(Literal("(").suppress() +
+                                Optional(args) +
+                                Literal(")").suppress()) +
+                          Optional(comment))
+        template_section = template_begin + Group(nestedExpr('{', '}', normalline))
+
+        resourceset_begin = (Keyword("beginResourceSet") +
+                             Group(Literal("(").suppress() +
+                                   Optional(args) +
+                                   Literal(")").suppress()) +
+                             Optional(comment))
+        resourceset_section = resourceset_begin + Group(nestedExpr('{', '}', normalline))
+
+        show_begin = (Keyword("beginShow") +
+                      Group(Literal("(").suppress() +
+                            Optional(args) +
+                            Literal(")").suppress()) +
+                      Optional(comment))
+        show_section = show_begin + Group(nestedExpr('{', '}', normalline))
+
+        self._expression << OneOrMore(template_section |
+                                      show_section |
+                                      resourceset_section |
+                                      comment)
 
     def parse(self):
-        for line in self._editor.toPlainText().split('\n'):
-            print(line)
-            if not line.strip():
-                continue
+        try:
+            print(self._editor.toPlainText())
+            parsed = self._expression.parseString(self._editor.toPlainText())
+            parsed.pprint()
+        except ParseException as pe:
+            print("Error at line " +
+                  str(pe.lineno) +
+                  " column " +
+                  str(pe.col) +
+                  ": " +
+                  pe.line)
+        except ParseFatalException:
+            print("Cannot parse right now!")
 
-            try:
-                parsed = self._expression.parseString(line)
-                print(parsed)
-            except ParseException:
-                print("Couldn't parse line")
+    def format_settings(self, s, l, t):
+        return {'settings': {x[0]: x[1] for x in t}}
 
 
 class PyShowEditorHighlighter(QSyntaxHighlighter):
