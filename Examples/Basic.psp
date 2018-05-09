@@ -1,10 +1,14 @@
 beginTemplate('TitlePage')
+{
 	addTextBlock('Title', 'Example Title', fontname='Courier New', fontsize=24, decoration='biu', alignment='left')
-endTemplate()
+}
 
+# Hello World!
 beginShow()
+{
 	newSlide('TitlePage')
 	setText('Title', 'Introduction')
-	pause()
+	pause() # waiting for key
 	setText('Title', 'Contents')
-endShow()
+	pause()
+}

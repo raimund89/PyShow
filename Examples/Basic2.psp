@@ -1,0 +1,15 @@
+# hello
+beginTemplate('TitlePage')
+{
+	addTextBlock('left')
+}
+
+# hello, wat leuk dit
+beginShow()
+{
+	newSlide('TitlePage')
+	setText('Title', 'Introduction')
+	pause() 
+	setText('Title', 'Contents')
+	pause()
+}
