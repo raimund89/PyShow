@@ -17,7 +17,8 @@
 """
 
 from pyparsing import (Word, ParseException, alphas, nums, Forward, alphanums,
-                       delimitedList, Literal, Group, Optional)
+                       delimitedList, Literal, Group, Optional, ZeroOrMore,
+                       OneOrMore, LineEnd, printables)
 from PyQt5.QtCore import Qt, QRegularExpression
 from PyQt5.QtGui import QTextCharFormat, QFont, QSyntaxHighlighter
 
@@ -55,25 +56,42 @@ class PyShowParser():
         string = (squote | dquote) + Word(alphanums + " ") + (squote | dquote)
         integer = Word(nums)
         setting = Group(identifier + equal + (integer | string))
+        comment = (Group(Literal("#") +
+                         delimitedList(Word(printables),
+                                       delim=Word(" ", exact=1),
+                                       combine=True) +
+                         LineEnd()).suppress())
         functor = identifier
+        lbr = Literal('{').suppress()
+        rbr = Literal('}').suppress()
 
         self._expression = Forward()
 
         arg = Group(self._expression) | integer | string | setting
         args = delimitedList(arg)
 
-        self._expression << functor + Group(Literal("(").suppress() +
-                                            Optional(args) +
-                                            Literal(")").suppress())
+        command = functor + Group(Literal("(").suppress() +
+                                  Optional(args) +
+                                  Literal(")").suppress())
+
+        contents = Group(lbr + ZeroOrMore(command | comment.suppress()) + rbr)
+
+        script = OneOrMore((command + contents) | comment.suppress())
+
+        self._expression << script
 
     def parse(self):
-        for line in self._editor.toPlainText().split('\n'):
-            print(line)
-            try:
-                parsed = self._expression.parseString(line)
-                print(parsed)
-            except ParseException:
-                print("Couldn't parse line")
+
+        text = self._editor.toPlainText()
+
+        if len(text) == 0:
+            return
+
+        try:
+            parsed = self._expression.parseString(text, parseAll=True)
+            print(parsed)
+        except ParseException as pe:
+            print(pe)
 
 
 class PyShowEditorHighlighter(QSyntaxHighlighter):
