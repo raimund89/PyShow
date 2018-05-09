@@ -105,6 +105,7 @@ class PyShowWindow(QMainWindow):
         self._preview = PyShowPreview(self._splitter)
         self._splitter.addWidget(self._preview)
         self._preview.initialize()
+        self.editor.cursorPositionChanged.connect(self.updatepreview)
 
     def init_ribbon(self):
         """Initialize the Ribbon bar with all components in it"""
@@ -190,3 +191,10 @@ class PyShowWindow(QMainWindow):
             self._actions[name].setEnabled(enabled)
         else:
             print("No such action")
+
+    def updatepreview(self):
+        """Updating the preview depending on the cursor position"""
+        if self.editor._parser.parse() is None:
+            print("Nothing to parse")
+        else:
+            self._preview.update()

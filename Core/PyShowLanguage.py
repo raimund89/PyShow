@@ -25,7 +25,6 @@ from PyQt5.QtGui import QTextCharFormat, QFont, QSyntaxHighlighter
 # TODO: parser currently allows for random text after the right parenthesis
 # TODO: function that tells the editor which lines have errors/warnings
 # TODO: an actual parsing code
-# TODO: empty lines are currently also parsed, this is not necessary
 
 sectionList = ["beginTemplate",
                "endTemplate",
@@ -86,9 +85,11 @@ class PyShowParser():
 
         try:
             parsed = self._expression.parseString(text, parseAll=True)
-            print(parsed)
+            return parsed
+            # print(parsed)
         except ParseException as pe:
             print(pe)
+            return
 
 
 class PyShowEditorHighlighter(QSyntaxHighlighter):

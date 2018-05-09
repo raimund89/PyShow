@@ -116,6 +116,9 @@ class PyShowSlide(QWidget):
 
     def paintEvent(self, event):
         """Called when the slide preview needs to be updated"""
+
+        print("Redrawing preview")
+
         painter = QPainter()
         painter.begin(self)
 
