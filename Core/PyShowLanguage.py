@@ -18,7 +18,6 @@
 
 from pyparsing import (Word, ParseException, alphas, nums, Forward, alphanums,
                        delimitedList, Literal, Group, Optional, ZeroOrMore,
-                       OneOrMore, LineEnd, printables)
 from PyQt5.QtCore import Qt, QRegularExpression
 from PyQt5.QtGui import QTextCharFormat, QFont, QSyntaxHighlighter
 
@@ -60,11 +59,6 @@ class PyShowParser():
         rbr = Literal('}').suppress()
 
         setting = Group(identifier + equal + (integer | string))
-        comment = (Group(Literal("#") +
-                         Optional(delimitedList(Word(printables),
-                                                delim=Word(" "),
-                                                combine=True)) +
-                         LineEnd()).suppress())
 
         self._expression = Forward()
 
