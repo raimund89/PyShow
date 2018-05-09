@@ -37,6 +37,7 @@ class PyShowEditor(QTextEdit):
         self.verticalScrollBar().valueChanged.connect(self.updatelinenumbers)
         self.textChanged.connect(self.updatelinenumbers)
         self.cursorPositionChanged.connect(self.updatelinenumbers)
+        self.cursorPositionChanged.connect(self.updatepreview)
 
         self.setStyleSheet("PyShowEditor {"
                            "border: none;"
@@ -111,6 +112,10 @@ class PyShowEditor(QTextEdit):
                                      0,
                                      self.line_number_area.width(),
                                      self.height())
+
+    def updatepreview(self):
+        """Updating the preview depending on the cursor position"""
+        pass
 
     def get_first_block_id(self):
         """Get the ID of the first visible text block in the editor"""
