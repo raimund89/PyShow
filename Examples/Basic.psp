@@ -10,5 +10,8 @@ beginShow()
 	setText('Title', 'Introduction')
 	pause() # waiting for key
 	setText('Title', 'Contents')
+<<<<<<< HEAD
 	pause()
+=======
+>>>>>>> origin/master
 }

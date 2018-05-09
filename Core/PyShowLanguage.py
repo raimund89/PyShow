@@ -55,15 +55,16 @@ class PyShowParser():
         equal = Literal("=").suppress()
         string = (squote | dquote) + Word(alphanums + " ") + (squote | dquote)
         integer = Word(nums)
-        setting = Group(identifier + equal + (integer | string))
-        comment = (Group(Literal("#") +
-                         delimitedList(Word(printables),
-                                       delim=Word(" ", exact=1),
-                                       combine=True) +
-                         LineEnd()).suppress())
         functor = identifier
         lbr = Literal('{').suppress()
         rbr = Literal('}').suppress()
+
+        setting = Group(identifier + equal + (integer | string))
+        comment = (Group(Literal("#") +
+                         Optional(delimitedList(Word(printables),
+                                                delim=Word(" "),
+                                                combine=True)) +
+                         LineEnd()).suppress())
 
         self._expression = Forward()
 
