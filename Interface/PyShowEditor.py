@@ -39,32 +39,32 @@ class PyShowEditor(QTextEdit):
         self.cursorPositionChanged.connect(self.updatelinenumbers)
 
         self.setStyleSheet("PyShowEditor {"
-                               "border: none;"
+                           "border: none;"
                            "}"
                            "QScrollBar:horizontal{"
-                               "background: #DDD;"
-                               "border: none;"
-                               "padding: 0px 18px 0px 18px;"
-                               "margin-right:2px;"
+                           "background: #DDD;"
+                           "border: none;"
+                           "padding: 0px 18px 0px 18px;"
+                           "margin-right:2px;"
                            "}"
                            "QScrollBar:handle:horizontal {"
-                               "background: white;"
-                               "border: 1px solid #AAA;"
-                               "min-width: 16px;"
+                           "background: white;"
+                           "border: 1px solid #AAA;"
+                           "min-width: 16px;"
                            "}"
                            "QScrollBar:add-line:horizontal {"
-                               "background: white;"
-                               "border: 1px solid #AAA;"
-                               "subcontrol-position: right;"
-                               "subcontrol-origin: padding;"
-                               "width: 16px;"
+                           "background: white;"
+                           "border: 1px solid #AAA;"
+                           "subcontrol-position: right;"
+                           "subcontrol-origin: padding;"
+                           "width: 16px;"
                            "}"
                            "QScrollBar:sub-line:horizontal {"
-                               "background: white;"
-                               "border: 1px solid #AAA;"
-                               "subcontrol-position: left;"
-                               "subcontrol-origin: padding;"
-                               "width: 16px;"
+                           "background: white;"
+                           "border: 1px solid #AAA;"
+                           "subcontrol-position: left;"
+                           "subcontrol-origin: padding;"
+                           "width: 16px;"
                            "}")
 
         # Require a minimal width and height to function
@@ -269,19 +269,19 @@ class PyShowEditor(QTextEdit):
         # If nothing is selected, just add or remove a TAB at the beginning
         # of the line
         if not cursor.hasSelection():
-                cursor.movePosition(QTextCursor.StartOfBlock,
-                                    QTextCursor.MoveAnchor)
+            cursor.movePosition(QTextCursor.StartOfBlock,
+                                QTextCursor.MoveAnchor)
 
-                if event.key() == Qt.Key_Tab:
-                    cursor.insertText("\t")
-                elif event.key() == Qt.Key_Backtab:
-                    # Select first character to see if it is a TAB
-                    cursor.movePosition(QTextCursor.NextCharacter,
-                                        QTextCursor.KeepAnchor)
+            if event.key() == Qt.Key_Tab:
+                cursor.insertText("\t")
+            elif event.key() == Qt.Key_Backtab:
+                # Select first character to see if it is a TAB
+                cursor.movePosition(QTextCursor.NextCharacter,
+                                    QTextCursor.KeepAnchor)
 
-                    if cursor.selectedText() == "\t":
-                        cursor.removeSelectedText()
-                return
+                if cursor.selectedText() == "\t":
+                    cursor.removeSelectedText()
+            return
 
         # We have a selection, so first get the entire selection
         start_pos = cursor.anchor()
@@ -302,7 +302,7 @@ class PyShowEditor(QTextEdit):
         # 'Undo'/'Redo' action will change all of them at the same time
         cursor.beginEditBlock()
 
-        for i in range(0, end_block-start_block+1):
+        for _ in range(0, end_block-start_block+1):
             cursor.movePosition(QTextCursor.StartOfBlock,
                                 QTextCursor.MoveAnchor)
 
