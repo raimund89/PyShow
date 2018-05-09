@@ -1,4 +1,4 @@
-# hello
+# hello dit is leuk
 beginTemplate('TitlePage')
 {
 	addTextBlock('left')
@@ -10,6 +10,7 @@ beginShow()
 	newSlide('TitlePage')
 	setText('Title', 'Introduction')
 	pause() 
+	# Hello, wat leuk!
 	setText('Title', 'Contents')
 	pause()
 }
