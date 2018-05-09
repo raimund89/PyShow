@@ -1,16 +1,18 @@
-# hello dit is leuk
+# A new slide template
 beginTemplate('TitlePage')
 {
 	addTextBlock('left')
 }
 
-# hello, wat leuk dit
+# This function describes the show
 beginShow()
 {
-	newSlide('TitlePage')
+	newSlide('TitlePage') # In-line
 	setText('Title', 'Introduction')
-	pause() 
-	# Hello, wat leuk!
-	setText('Title', 'Contents')
 	pause()
+	# Text between lines
+	#
+	# And skipping a line
+	setText('Title', 'Contents')
+	pause() # Also inline
 }
