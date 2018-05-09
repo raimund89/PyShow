@@ -182,3 +182,11 @@ class PyShowWindow(QMainWindow):
                     return
 
         self._project.close()
+
+    def enable_action(self, name, enabled):
+        """Enables or disables an action with the given name"""
+
+        if name in self._actions:
+            self._actions[name].setEnabled(enabled)
+        else:
+            print("No such action")

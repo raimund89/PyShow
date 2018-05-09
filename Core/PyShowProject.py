@@ -16,8 +16,6 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-# TODO: enable/disable save button when project is opened/closed
-
 from PyQt5.QtWidgets import QFileDialog
 
 
@@ -100,6 +98,7 @@ class PyShowProject:
 
         self._lastsaved = ""
         self.opened = False
+        self._mainwindow.enable_action('file_save', False)
 
     def changed(self):
         """Returns whether the text was changed compared to the last save"""
@@ -119,10 +118,13 @@ class PyShowProject:
 
         if not self.changed():
             self._mainwindow.setWindowTitle('PyShow - ' + name)
+            self._mainwindow.enable_action('file_save', False)
         else:
-            self._mainwindow.setWindowTitle('PyShow - ' + name + ' *')
+            self._mainwindow.setWindowTitle('PyShow - ' + name + '*')
+            self._mainwindow.enable_action('file_save', True)
 
     def name(self):
+        """Returns the name of the current file, or Untitled if none"""
         if self._filename:
             return self._filename
         else:
