@@ -27,14 +27,13 @@ from PyQt5.QtGui import QTextCharFormat, QFont, QSyntaxHighlighter
 # TODO: an actual parsing code
 
 sectionList = ["beginTemplate",
-               "endTemplate",
                "beginShow",
-               "endShow",
                ]
 
 functionList = ["setText",
                 "addTextBlock",
-                "newSlide"
+                "newSlide",
+                "setBackgroundColor"
                 ]
 
 actionList = ["pause"]
@@ -54,13 +53,13 @@ class PyShowParser():
         eq = Literal("=").suppress()
         string = (squote | dquote) + Word(alphanums + " #") + (squote | dquote)
         integer = Word(nums)
-        functor = identifier
+        functor = identifier.setParseAction(lambda loc, tok: (tok[0], loc))
         lbr = Literal('{').suppress()
         rbr = Literal('}').suppress()
         lp = Literal('(').suppress()
         rp = Literal(')').suppress()
 
-        setting = Group(identifier + eq + (integer | string))
+        setting = Group(identifier("key") + eq + (integer | string)("value"))
         comment = Group(Literal("#") + SkipTo(LineEnd())).suppress()
 
         self._expression = Forward()
@@ -84,7 +83,8 @@ class PyShowParser():
             return
 
         try:
-            parsed = self._expression.parseString(text, parseAll=True)
+            parsed = self._expression.parseString(text.replace('\t', ' '),
+                                                  parseAll=True)
             print(parsed.dump())
             return parsed
         except ParseException as pe:
