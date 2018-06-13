@@ -1,6 +1,7 @@
 # Define a slide layout
 beginTemplate('TitlePage')
 {
+	setBackground('#FF0')
 	addTextBlock('Title', 'Example Title', fontname='Courier New', fontsize=24, decoration='biu', alignment='left')
 }
 
