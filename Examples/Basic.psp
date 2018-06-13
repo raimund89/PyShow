@@ -1,8 +1,8 @@
 # Define a slide layout
 beginTemplate('TitlePage')
 {
-	setBackground('#FF0')
-	addTextBlock('Title', 'Example Title', fontname='Courier New', fontsize=24, decoration='biu', alignment='left')
+	setBackgroundColor('#500')
+	addTextBlock('Title', text='Example Title', x=1920, y=1080, fontname='Times New Roman', fontsize=100, decoration='biu', alignment='left', color='#FFF')
 }
 
 # The slideshow begins here
