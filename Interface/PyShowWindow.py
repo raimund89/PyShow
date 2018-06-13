@@ -24,6 +24,7 @@ from Interface.PyShowStatusbar import PyShowStatusbar
 from Interface.PyShowEditor import PyShowEditor
 from Interface.PyShowPreview import PyShowPreview
 from Core.PyShowProject import PyShowProject
+from pprint import pprint
 
 
 class PyShowWindow(QMainWindow):
@@ -194,7 +195,30 @@ class PyShowWindow(QMainWindow):
 
     def updatepreview(self):
         """Updating the preview depending on the cursor position"""
-        if self.editor._parser.parse() is None:
+        parsed = self.editor._parser.parse()
+
+        if parsed is None:
             print("Nothing to parse")
         else:
-            self._preview.update()
+            # We need two things: the parsed data, and the location of the
+            # cursor within this parsed data. The first we have, now calculate
+            # the second
+            cursor = self.editor.textCursor().position()
+            pos_l1 = -2
+            pos_l2 = -2
+
+            # Determine the block we are in
+            i = len(parsed)-1
+            while parsed[i][0][1] > cursor and i > 0:
+                i -= 1
+            pos_l1 = i
+
+            # Now determine the position within the block. The -1 after the
+            # position given by pyparsing is to compensate for the 1 tab
+            # indentation for the block
+            j = len(parsed[pos_l1]["contents"])-1
+            while parsed[pos_l1]["contents"][j][0][1]-1 > cursor and j > 0:
+                j -= 1
+            pos_l2 = j
+
+            self._preview.refresh(parsed, (pos_l1, pos_l2))
