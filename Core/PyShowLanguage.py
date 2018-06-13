@@ -51,30 +51,30 @@ class PyShowParser():
         identifier = Word(alphas + "_", alphas + nums + "_")
         squote = Literal("'").suppress()
         dquote = Literal('"').suppress()
-        equal = Literal("=").suppress()
-        string = (squote | dquote) + Word(alphanums + " ") + (squote | dquote)
+        eq = Literal("=").suppress()
+        string = (squote | dquote) + Word(alphanums + " #") + (squote | dquote)
         integer = Word(nums)
         functor = identifier
         lbr = Literal('{').suppress()
         rbr = Literal('}').suppress()
+        lp = Literal('(').suppress()
+        rp = Literal(')').suppress()
 
-        setting = Group(identifier + equal + (integer | string))
+        setting = Group(identifier + eq + (integer | string))
         comment = Group(Literal("#") + SkipTo(LineEnd())).suppress()
 
         self._expression = Forward()
 
         arg = Group(self._expression) | integer | string | setting
-        args = delimitedList(arg)
+        args = Group(lp + Optional(delimitedList(arg)) + rp)("args")
 
-        command = functor + Group(Literal("(").suppress() +
-                                  Optional(args) +
-                                  Literal(")").suppress())
+        command = Group(functor("name") + args)
 
-        contents = Group(lbr + ZeroOrMore(command | comment.suppress()) + rbr)
-
-        script = OneOrMore((command + contents) | comment.suppress())
-
-        self._expression << script
+        script = Group(functor("name") + args +
+                       lbr +
+                       ZeroOrMore(command | comment.suppress())("contents") +
+                       rbr)
+        self._expression << OneOrMore(script | comment.suppress())
 
     def parse(self):
 
@@ -85,8 +85,8 @@ class PyShowParser():
 
         try:
             parsed = self._expression.parseString(text, parseAll=True)
+            print(parsed.dump())
             return parsed
-            # print(parsed)
         except ParseException as pe:
             print(pe)
             return
@@ -139,6 +139,14 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
         rule = HighlightingRule(pattern, comment)
         self.highlightingRules.append(rule)
 
+        # Comments
+        comment = QTextCharFormat()
+        comment.setForeground(Qt.darkGray)
+        comment.setFontItalic(True)
+        pattern = QRegularExpression("#[^\n]*")
+        rule = HighlightingRule(pattern, comment)
+        self.highlightingRules.append(rule)
+
         # Strings
         string = QTextCharFormat()
         string.setForeground(Qt.darkMagenta)
@@ -148,14 +156,6 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
         self.highlightingRules.append(rule)
         pattern = QRegularExpression("\'.*?\'")
         rule = HighlightingRule(pattern, string)
-        self.highlightingRules.append(rule)
-
-        # Comments
-        comment = QTextCharFormat()
-        comment.setForeground(Qt.darkGray)
-        comment.setFontItalic(True)
-        pattern = QRegularExpression("#[^\n]*")
-        rule = HighlightingRule(pattern, comment)
         self.highlightingRules.append(rule)
 
     def highlightBlock(self, text):
