@@ -145,126 +145,109 @@ class PyShowSlide(QWidget):
         # last newSlide-statement and prepare the preview from there.
         if self._data is not None and self._cursor is not None:
             data = self._data[self._cursor[0]]["contents"]
+
+            # Try to find the last newSlide command
             i = 0
             while (data[self._cursor[1]-i]["name"] != "newSlide" and
                    self._cursor[1]-i > -1):
                 i += 1
 
-            if data[self._cursor[1]-i]["name"] != "newSlide":
-                print("ERROR: no newSlide in block!")
-                painter.end()
-                return
+            # Try to find the next pause command
+            j = 0
+            while (data[self._cursor[1]+j]["name"] != "pause" and
+                   self._cursor[1]+j < len(data)-1):
+                j += 1
 
-            # Check if the template exists
+            # If there is a newSlide command, find the template. Otherwise
+            # we can continue anyway, but there will be no loaded objects.
+            # Same goes for an unfound template, it will just throw a lot of
+            # errors down the line...
             template = None
-            for block in self._data:
-                if (block["name"] == "beginTemplate" and
-                    block["args"][0] == data[self._cursor[1]-i]["args"][0]):
-                    template = block["contents"]
-                    break
+            if data[self._cursor[1]-i]["name"] != "newSlide":
+                print("WARNING: no newSlide in block!")
+            else:
+                # Check if the template exists
+                for block in self._data:
+                    if (block["name"] == "beginTemplate" and
+                        block["args"][0] == data[self._cursor[1]-i]["args"][0]):
+                        template = block["contents"]
+                        break
+                if template is None:
+                    print("ERROR: template %s not found" % (data[self._cursor[1]-i]["args"][0]))
+                    return
 
-            if template is None:
-                print("ERROR: no template with this name!")
-                painter.end()
-                return
-
-            # Run through the template and fill a dict with all standard
-            # objects. This list can be appended later by the script if
-            # new objects are created on the fly
+            # If there is a template, load the objects in a dict
             objects = {}
-            for setting in template:
-                if setting["name"] == "setBackgroundColor":
-                    objects["background_color"] = QColor(setting["args"][0])
-                elif setting["name"] == "addTextBlock":
-                    objects["text_" + setting["args"][0]] = {}
-                    for entry in setting["args"][1:]:
-                        if len(entry) == 2:
-                            objects["text_" + setting["args"][0]][entry[0][0]] = entry[1]
-                        else:
-                            print("ERROR: value without a key!")
 
-            print(objects)
+            if template:
+                # Run through the template and fill a dict with all standard
+                # objects. This list can be appended later by the script if
+                # new objects are created on the fly
+                for setting in template:
+                    if setting["name"] == "setBackgroundColor":
+                        objects["background_color"] = QColor(setting["args"][0])
+                    else:
+                        prefix = ''
+                        if setting["name"] == "addTextBlock":
+                            prefix = 'text_'
+                        objects[prefix + setting["args"][0]] = argstodict(setting["args"][1:])
+
+                print(objects)
 
             # Work through all the commands until the cursor, putting all
             # commands to execute in another dict, so changes in the same
             # object are overwritten and only the final form is shown
             drawingcommands = collections.OrderedDict()
 
-            for j in range(i):
-                command = data[self._cursor[1]-i+j+1]
+            for k in range(i+j):
+                command = data[self._cursor[1]-i+k+1]
 
-                if command["name"] == "setText":
+                if command["name"] == "setText" or command["name"] == "addTextBlock":
                     # Search the object list for this text object
                     name = "text_" + command["args"][0]
                     text = objects.get(name)
-                    if text is None:
+
+                    # If the object exists and we're in addTextBlock: conflict
+                    if text and command["name"] == "addTextBlock":
+                        print("ERROR: redefinition of object %s" % (command["args"][0]))
+                        continue
+                    # If the object doesn't exist and we are trying to access
+                    # it: conflict
+                    elif text is None and command["name"] == "setText":
                         print("ERROR: text object %s undefined" % (command["args"][0]))
                         continue
+                    # Else, if we are in addTextBlock, we can add it. No case
+                    # for if we are in setText, because that's no problem.
+                    elif command["name"] == "addTextBlock":
+                        objects[name] = argstodict(command["args"][1:])
+                        text = objects.get(name)
 
+                    # If the object is not in the drawing list, add the
+                    # template version to the drawing list first, so all
+                    # settings are loaded
                     if not drawingcommands.get(name):
+                        print('Not yet in the drawing list')
                         # Add the command to the drawing list
                         drawingcommands[name] = {}
                         obj = drawingcommands[name]
 
                         obj["type"] = "text"
 
-                        # Make the font object
-                        font = QFont()
-                        if text["fontname"]:
-                            font.setFamily(text["fontname"])
+                        changeText(obj, text, scale)
 
-                        if text["fontsize"]:
-                            font.setPointSizeF(text["fontsize"]*scale)
+                    # Now change the settings according to this command
+                    drawingcommands.move_to_end(name)
 
-                        # Font decorations allowed:
-                        # i - Italic
-                        # b - Bold
-                        # u - Underline
-                        # f - Fixed pitch
-                        # k - Kerning
-                        # o - Overline
-                        # s - Strike out
-                        if text["decoration"]:
-                            if "i" in text["decoration"]:
-                                font.setItalic(True)
-                            if "b" in text["decoration"]:
-                                font.setBold(True)
-                            if "u" in text["decoration"]:
-                                font.setUnderline(True)
-                            if "f" in text["decoration"]:
-                                font.setFixedPitch(True)
-                            if "k" in text["decoration"]:
-                                font.setKerning(True)
-                            if "o" in text["decoration"]:
-                                font.setOverline(True)
-                            if "s" in text["decoration"]:
-                                font.setStrikeOut(True)
+                    # Make all changes accessible through a dict structure
+                    changes = argstodict(command["args"][1:])
+                    print(changes)
 
-                        # Other properties
-                        # Capitalization
-                        # Hinting
-                        # Letter Spacing
-                        # Stretch
-                        # Style, Stylehint, Stylename, Stylestrategy
-                        # Word spacing
-                        # Weight
+                    # Now loop through the changes to make them
+                    changeText(drawingcommands[name], changes, scale)
 
-                        obj["font"] = font
-
-                        # Set the text color
-                        # TODO: the pen pattern, thickness, shadow, etc.
-                        obj["color"] = text["color"] if text["color"] else "#000"
-
-                        obj["x"] = text["x"]*scale if text["x"] else 0.0
-                        obj["y"] = text["y"]*scale if text["y"] else 0.0
-
-                        obj["text"] = command["args"][1]
-                    else:
-                        drawingcommands.move_to_end(name)
-                        obj = drawingcommands[name]
-
-                        obj["text"] = command["args"][1]
-
+                elif command["name"] == "setBackgroundColor":
+                    print(command["args"][0])
+                    objects["background_color"] = QColor(command["args"][0])
                 elif command["name"] == "pause":
                     pass
                 else:
@@ -288,3 +271,70 @@ class PyShowSlide(QWidget):
                     painter.drawText(QPoint(task["x"], task["y"]),task["text"])
         # Finish drawing
         painter.end()
+
+def argstodict(args):
+    obj = {}
+    for entry in args:
+        if len(entry) == 2:
+            obj[entry[0][0]] = entry[1]
+        else:
+            print("ERROR: value without a key!")
+
+    return obj
+
+def changeText(entry, changes, scale):
+    # Make the font object
+    if entry.get("font"):
+        font = entry["font"]
+    else:
+        font = QFont()
+
+    if changes.get("fontname"):
+        font.setFamily(changes["fontname"])
+
+    if changes.get("fontsize"):
+        font.setPointSizeF(changes["fontsize"]*scale)
+
+    # Font decorations allowed:
+    # i - Italic
+    # b - Bold
+    # u - Underline
+    # f - Fixed pitch
+    # k - Kerning
+    # o - Overline
+    # s - Strike out
+    if changes.get("decoration"):
+        if "i" in changes["decoration"]:
+            font.setItalic(True)
+        if "b" in changes["decoration"]:
+            font.setBold(True)
+        if "u" in changes["decoration"]:
+            font.setUnderline(True)
+        if "f" in changes["decoration"]:
+            font.setFixedPitch(True)
+        if "k" in changes["decoration"]:
+            font.setKerning(True)
+        if "o" in changes["decoration"]:
+            font.setOverline(True)
+        if "s" in changes["decoration"]:
+            font.setStrikeOut(True)
+
+    # Other properties
+    # Capitalization
+    # Hinting
+    # Letter Spacing
+    # Stretch
+    # Style, Stylehint, Stylename, Stylestrategy
+    # Word spacing
+    # Weight
+
+    entry["font"] = font
+
+    # Set the text color
+    # TODO: the pen pattern, thickness, shadow, etc.
+    entry["color"] = (changes["color"] if changes.get("color") else (entry["color"] if "color" in entry else "#000"))
+
+    entry["x"] = (changes["x"]*scale if "x" in changes else (entry["x"] if "x" in entry else 0.0))
+    entry["y"] = (changes["y"]*scale if "y" in changes else (entry["y"] if "y" in entry else 0.0))
+
+    entry["text"] = changes["text"] if "text" in changes else (entry["text"] if "text" in entry else "")
