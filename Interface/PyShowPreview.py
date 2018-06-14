@@ -19,6 +19,7 @@
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QPainter, QColor, QLinearGradient, QFont, QPen
 from PyQt5.QtCore import QRect, Qt, QPoint
+import collections
 
 
 class PyShowPreview(QWidget):
@@ -137,9 +138,7 @@ class PyShowSlide(QWidget):
 
         # Define slide area
         rect = self.geometry()
-        print(rect)
-        scaled = rect.width()/self._size[0]
-        print(scaled)
+        scale = rect.width()/self._size[0]
 
         # We know the cursor position and the parsed data. We want to know
         # which line corresponds to the cursor position, so we can find the
@@ -159,8 +158,6 @@ class PyShowSlide(QWidget):
             # Check if the template exists
             template = None
             for block in self._data:
-                print(block["name"])
-                print(block["args"])
                 if (block["name"] == "beginTemplate" and
                     block["args"][0] == data[self._cursor[1]-i]["args"][0]):
                     template = block["contents"]
@@ -188,44 +185,106 @@ class PyShowSlide(QWidget):
 
             print(objects)
 
-            # The background
-            if objects["background_color"]:
-                color = objects["background_color"]
-            else:
-                color = QColor('#FFF')
+            # Work through all the commands until the cursor, putting all
+            # commands to execute in another dict, so changes in the same
+            # object are overwritten and only the final form is shown
+            drawingcommands = collections.OrderedDict()
 
-            # Draw a rect for the background
-            painter.fillRect(QRect(0,
-                                   0,
-                                   rect.width(),
-                                   rect.height()),
-                             color)
-
-            painter.fillRect(QRect(100*scaled,
-                                   100*scaled,
-                                   1700*scaled,
-                                   800*scaled),
-                             QColor('#00F'))
-
-            # Work through all the commands until the cursor
             for j in range(i):
-                print(j+1)
                 command = data[self._cursor[1]-i+j+1]
 
                 if command["name"] == "setText":
                     # Search the object list for this text object
-                    text = objects.get("text_" + command["args"][0])
+                    name = "text_" + command["args"][0]
+                    text = objects.get(name)
                     if text is None:
                         print("ERROR: text object %s undefined" % (command["args"][0]))
+                        continue
 
-                    font = QFont(text["fontname"], int(text["fontsize"])*scaled)
-                    painter.setFont(font)
-                    if text["color"]:
-                        painter.setPen(QPen(QColor(text["color"])))
-                    painter.drawText(QPoint(int(text["x"])*scaled, int(text["y"]))*scaled,
-                                     command["args"][1])
+                    if not drawingcommands.get(name):
+                        # Add the command to the drawing list
+                        drawingcommands[name] = {}
+                        obj = drawingcommands[name]
+
+                        obj["type"] = "text"
+
+                        # Make the font object
+                        font = QFont()
+                        if text["fontname"]:
+                            font.setFamily(text["fontname"])
+
+                        if text["fontsize"]:
+                            font.setPointSizeF(text["fontsize"]*scale)
+
+                        # Font decorations allowed:
+                        # i - Italic
+                        # b - Bold
+                        # u - Underline
+                        # f - Fixed pitch
+                        # k - Kerning
+                        # o - Overline
+                        # s - Strike out
+                        if text["decoration"]:
+                            if "i" in text["decoration"]:
+                                font.setItalic(True)
+                            if "b" in text["decoration"]:
+                                font.setBold(True)
+                            if "u" in text["decoration"]:
+                                font.setUnderline(True)
+                            if "f" in text["decoration"]:
+                                font.setFixedPitch(True)
+                            if "k" in text["decoration"]:
+                                font.setKerning(True)
+                            if "o" in text["decoration"]:
+                                font.setOverline(True)
+                            if "s" in text["decoration"]:
+                                font.setStrikeOut(True)
+
+                        # Other properties
+                        # Capitalization
+                        # Hinting
+                        # Letter Spacing
+                        # Stretch
+                        # Style, Stylehint, Stylename, Stylestrategy
+                        # Word spacing
+                        # Weight
+
+                        obj["font"] = font
+
+                        # Set the text color
+                        # TODO: the pen pattern, thickness, shadow, etc.
+                        obj["color"] = text["color"] if text["color"] else "#000"
+
+                        obj["x"] = text["x"]*scale if text["x"] else 0.0
+                        obj["y"] = text["y"]*scale if text["y"] else 0.0
+
+                        obj["text"] = command["args"][1]
+                    else:
+                        drawingcommands.move_to_end(name)
+                        obj = drawingcommands[name]
+
+                        obj["text"] = command["args"][1]
+
+                elif command["name"] == "pause":
+                    pass
                 else:
                     print("WARNING: command '%s' unknown" % (command["name"]))
 
+            # First, treat the background separately, if set
+            if objects.get("background_color"):
+                color = objects["background_color"]
+                painter.fillRect(QRect(0,
+                                       0,
+                                       rect.width(),
+                                       rect.height()),
+                                 color)
+
+            # Now go through the drawing list, and execute
+            for entry in drawingcommands:
+                task = drawingcommands[entry]
+                if task["type"] == "text":
+                    painter.setFont(task["font"])
+                    painter.setPen(QPen(QColor(task["color"])))
+                    painter.drawText(QPoint(task["x"], task["y"]),task["text"])
         # Finish drawing
         painter.end()
