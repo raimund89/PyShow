@@ -28,6 +28,7 @@ beginShow()
 	newSlide('TitlePage')
 	setText('Title', text="Introduction")
 	pause() # waiting for key
+	setBackgroundColor('#050')
 	setText('Title2', text='Contents')
 	setText('Title', text='Bladie\'bla', fontsize=200)
 	pause()
