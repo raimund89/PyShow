@@ -16,9 +16,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from pyparsing import (Word, ParseException, alphas, nums, Forward, alphanums,
+from pyparsing import (Word, ParseException, alphas, nums, Forward,
                        delimitedList, Literal, Group, Optional, ZeroOrMore,
-                       OneOrMore, LineEnd, SkipTo)
+                       OneOrMore, LineEnd, SkipTo, Combine, QuotedString)
 from PyQt5.QtCore import Qt, QRegularExpression
 from PyQt5.QtGui import QTextCharFormat, QFont, QSyntaxHighlighter
 
@@ -48,23 +48,28 @@ class PyShowParser():
         self._editor.textChanged.connect(self.parse)
 
         identifier = Word(alphas + "_", alphas + nums + "_")
-        squote = Literal("'").suppress()
-        dquote = Literal('"').suppress()
         eq = Literal("=").suppress()
-        string = (squote | dquote) + Word(alphanums + " #") + (squote | dquote)
-        integer = Word(nums)
+        string = (QuotedString("'", escChar="\\", multiline=True) |
+                  QuotedString('"', escChar="\\", multiline=True))
+        minus = Optional("-")
+        num = Word(nums)
+        int_value = Combine(minus + num).setParseAction(lambda s, l, t: [int(t[0])])
+        float_value = Combine(minus + Optional(num) + "." + num).setParseAction(lambda s, l, t: [float(t[0])])
+        number = float_value | int_value
         functor = identifier.setParseAction(lambda loc, tok: (tok[0], loc))
         lbr = Literal('{').suppress()
         rbr = Literal('}').suppress()
         lp = Literal('(').suppress()
         rp = Literal(')').suppress()
 
-        setting = Group(identifier("key") + eq + (integer | string)("value"))
+        setting = (Group(identifier("key") +
+                         eq +
+                         (number | string)("value")))
         comment = Group(Literal("#") + SkipTo(LineEnd())).suppress()
 
         self._expression = Forward()
 
-        arg = Group(self._expression) | integer | string | setting
+        arg = Group(self._expression) | string | setting | number
         args = Group(lp + Optional(delimitedList(arg)) + rp)("args")
 
         command = Group(functor("name") + args)
