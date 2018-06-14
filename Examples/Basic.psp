@@ -26,9 +26,9 @@ beginTemplate('TitlePage')
 beginShow()
 {
 	newSlide('TitlePage')
-	setText('Title', "Introduction")
+	setText('Title', text="Introduction")
 	pause() # waiting for key
-	setText('Title2', 'Contents')
-	setText('Title', 'Bladie\'bla')
+	setText('Title2', text='Contents')
+	setText('Title', text='Bladie\'bla', fontsize=200)
 	pause()
 }
