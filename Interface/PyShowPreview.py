@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QPainter, QColor, QLinearGradient, QFont, QPen
 from PyQt5.QtCore import QRect, Qt, QPoint
 import collections
-from Core.PyShowLanguage import template_functions
+from Core.PyShowLanguage import template_functions, show_functions
 
 
 class PyShowPreview(QWidget):
@@ -188,14 +188,12 @@ class PyShowSlide(QWidget):
                     if setting["name"] == "setBackgroundColor":
                         objects["background_color"] = QColor(setting["args"][0])
                     else:
-                        prefix = ''
-                        if setting["name"] == "addTextBlock":
-                            prefix = 'text_'
-                        elif setting["name"] not in template_functions:
+                        if setting["name"] in template_functions:
+                            objects[setting["args"][0]] = argstodict(setting["args"][1:])
+                        elif setting["name"] in show_functions:
                             print("ERROR: function '%s' not allowed in template" % (setting["name"]))
                         else:
-                            print("ERROR: unknown function '%s'" % (setting["name"]))
-                        objects[prefix + setting["args"][0]] = argstodict(setting["args"][1:])
+                            print("ERROR: unknown template function '%s'" % (setting["name"]))
 
             # Work through all the commands until the cursor, putting all
             # commands to execute in another dict, so changes in the same
@@ -205,41 +203,38 @@ class PyShowSlide(QWidget):
             for k in range(i+j):
                 command = data[self._cursor[1]-i+k+1]
 
-                if command["name"] == "setText" or command["name"] == "addTextBlock":
-                    if not template and command["name"] == "setText":
-                        print("ERROR: function '%s' not allowed in template" % (command["name"]))
+                # If we're previewing a template instead of a show, only
+                # template functions are allowed.
+                if not template and command["name"] not in template_functions:
+                    print("ERROR: function '%s' not allowed in template" % (command["name"]))
+                    continue
+
+                # Nothing to do for drawing when it's a pause function
+                if command["name"] == "pause":
+                    continue
+
+                if len(command["args"]) ==0:
+                    print("ERROR: not enough arguments, at least the object name should be given")
+                    continue
+
+                name = command["args"][0]
+
+                if command["name"] in show_functions:
+                    # Get the object, if it already exists
+                    obj = objects.get(name)
+
+                    if not obj:
+                        print("ERROR: object '%s' undefined, first add it to the template or show using a template function" % (command["args"][0]))
                         continue
 
-                    # Search the object list for this text object
-                    name = "text_" + command["args"][0]
-                    text = objects.get(name)
-
-                    # If the object exists and we're in addTextBlock: conflict
-                    if text and command["name"] == "addTextBlock":
-                        print("ERROR: redefinition of object '%s'" % (command["args"][0]))
-                        continue
-                    # If the object doesn't exist and we are trying to access
-                    # it: conflict
-                    elif text is None and command["name"] == "setText":
-                        print("ERROR: text object '%s' undefined" % (command["args"][0]))
-                        continue
-                    # Else, if we are in addTextBlock, we can add it. No case
-                    # for if we are in setText, because that's no problem.
-                    elif command["name"] == "addTextBlock":
-                        objects[name] = argstodict(command["args"][1:])
-                        text = objects.get(name)
-
-                    # If the object is not in the drawing list, add the
-                    # template version to the drawing list first, so all
-                    # settings are loaded
                     if not drawingcommands.get(name):
-                        # Add the command to the drawing list
                         drawingcommands[name] = {}
-                        obj = drawingcommands[name]
 
-                        obj["type"] = "text"
-
-                        changeText(obj, text, scale)
+                        if command["name"] == "setText":
+                            drawingcommands[name]["type"] = "text"
+                            changeText(drawingcommands[name], obj, scale)
+                        # TODO: Add more commands here. Later, this should be a
+                        # dict with function/prefix pairs
 
                     # Now change the settings according to this command
                     drawingcommands.move_to_end(name)
@@ -248,12 +243,32 @@ class PyShowSlide(QWidget):
                     changes = argstodict(command["args"][1:])
 
                     # Now loop through the changes to make them
-                    changeText(drawingcommands[name], changes, scale)
+                    if command["name"] == "setText":
+                        changeText(drawingcommands[name], changes, scale)
+                    # TODO: Add more commands here
 
-                elif command["name"] == "setBackgroundColor":
-                    objects["background_color"] = QColor(command["args"][0])
-                elif command["name"] == "pause":
-                    print('Pause executed')
+                elif command["name"] in template_functions:
+                    # Exception for the background color
+                    if command["name"] == "setBackgroundColor":
+                        objects["background_color"] = QColor(command["args"][0])
+                        continue
+
+                    # If it already exists, throw error
+                    if name in objects:
+                        print("ERROR: redefinition of object '%s'. Will not overwrite." % (command["args"][0]))
+                        continue
+
+                    # Add the object to the objects list before drawing
+                    objects[name] = argstodict(command["args"][1:])
+
+                    # Add the object to the drawing commands
+                    drawingcommands[name] = {}
+
+                    # Now draw, depending on the function
+                    if command["name"] == "addTextBox":
+                        drawingcommands[name]["type"] = "text"
+                        changeText(drawingcommands[name], objects[name], scale)
+
                 else:
                     print("WARNING: command '%s' unknown" % (command["name"]))
 
