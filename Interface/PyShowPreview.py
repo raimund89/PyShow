@@ -284,11 +284,47 @@ class PyShowSlide(QWidget):
                 if task["type"] == "text":
                     painter.setFont(task["font"])
                     painter.setPen(QPen(QColor(task["color"])))
-                    painter.drawText(QPoint(task["x"], task["y"]), task["text"])
+                    painter.drawText(QRect(task["x"],
+                                           task["y"],
+                                           task["width"],
+                                           task["height"]),
+                                     Qt.TextWordWrap|Qt.TextDontClip|Qt.TextExpandTabs,
+                                     task["text"])
+                if task["type"] == "list":
+                    painter.setFont(task["font"])
+                    painter.setPen(QPen(QColor(task["color"])))
+
+                    # Loop through the list
+                    for item in task["text"]:
+                        painter.drawText(QRect(task["x"],
+                                               task["y"],
+                                               task["width"],
+                                               task["height"]),
+                                         Qt.TextWordWrap|Qt.TextDontClip|Qt.TextExpandTabs,
+                                         item)
+
+                        if task["bullet_type"] == "c":
+                            painter.drawText(QRect(task["x"]-100*scale,
+                                                   task["y"]-10*scale,
+                                                   100*scale,
+                                                   task["font"].pixelSize()*scale),
+                                             Qt.TextWordWrap,
+                                             task["bullet"])
+#                    # Draw the bullets
+#                    numbul = task["text"].count('\n')+1
+#                    if task["bullet_type"] == "c":
+#                        bultext = (task['bullet'] + "\n")*numbul
+#                        painter.drawText(QRect(task["x"]-100*scale,
+#                                               task["y"]-10*scale,
+#                                               100*scale,
+#                                               1000),
+#                                         Qt.TextWordWrap,
+#                                         bultext)
+
         # Finish drawing
         painter.end()
 
-    def change_text(self, entry, changes, scale):
+    def change_text(self, entry, changes):
         """Change properties of a text object using the changes variable"""
         # Make the font object
         if entry.get("font"):
@@ -300,7 +336,7 @@ class PyShowSlide(QWidget):
             font.setFamily(changes["fontname"])
 
         if changes.get("fontsize"):
-            font.setPointSizeF(changes["fontsize"]*scale)
+            font.setPixelSize(changes["fontsize"])
 
         # Font decorations allowed:
         # i - Italic
@@ -341,10 +377,24 @@ class PyShowSlide(QWidget):
         # TODO: the pen pattern, thickness, shadow, etc.
         entry["color"] = (changes["color"] if changes.get("color") else (entry["color"] if "color" in entry else "#000"))
 
-        entry["x"] = (changes["x"]*scale if "x" in changes else (entry["x"] if "x" in entry else 0.0))
-        entry["y"] = (changes["y"]*scale if "y" in changes else (entry["y"] if "y" in entry else 0.0))
+        entry["x"] = (changes["x"] if "x" in changes else (entry["x"] if "x" in entry else 0.0))
+        entry["y"] = (changes["y"] if "y" in changes else (entry["y"] if "y" in entry else 0.0))
+        entry["width"] = (changes["width"] if "width" in changes else (entry["width"] if "width" in entry else 500.0))
+        entry["height"] = (changes["height"] if "height" in changes else (entry["height"] if "height" in entry else 300.0))
 
         entry["text"] = changes["text"] if "text" in changes else (entry["text"] if "text" in entry else "")
+
+    def change_list(self, entry, changes, scale):
+        """Change properties of a bullet list object"""
+
+        # Properties are mostly the same as for a text object
+        self.change_text(entry, changes, scale)
+
+        # ...except for the bullet type
+        # c=character, p=picture
+        entry["bullet_type"] = changes["bullet_type"] if "bullet_type" in changes else (entry["bullet_type"] if "bullet_type" in entry else "c")
+        entry["bullet"] = changes["bullet"] if "bullet" in changes else (entry["bullet"] if "bullet" in entry else "■")
+
 
 def argstodict(args):
     """Converts an argument list to a dictionary"""
