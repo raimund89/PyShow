@@ -1,7 +1,9 @@
 # Define a slide layout
 beginTemplate('TitlePage')
 {
+	# Set the background color for the slide
 	setBackgroundColor('#500')
+	# Add a textbox with some styles and parameters assigned
 	addTextBlock('Title', 
 				 text='Example Title', 
 				 x=80, 
@@ -11,6 +13,8 @@ beginTemplate('TitlePage')
 				 decoration='', 
 				 alignment='left', 
 				 color='#FFF')
+	# Add another textbox, with different styles. The first parameter,
+	# the name, should be unique! If not, this will throw an error.
 	addTextBlock('Title2', 
 				 text='Example Title', 
 				 x=80, 
@@ -20,6 +24,9 @@ beginTemplate('TitlePage')
 				 decoration='biu', 
 				 alignment='left', 
 				 color='#F0F')
+	# This is not allowed, as it is not a template function, and will
+	# throw an error. It will also do nothing to the template preview.
+	setText('Title', text='Hello!')
 }
 
 # The slideshow begins here
