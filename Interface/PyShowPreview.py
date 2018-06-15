@@ -20,6 +20,7 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QPainter, QColor, QLinearGradient, QFont, QPen
 from PyQt5.QtCore import QRect, Qt, QPoint
 import collections
+from Core.PyShowLanguage import template_functions
 
 
 class PyShowPreview(QWidget):
@@ -173,7 +174,7 @@ class PyShowSlide(QWidget):
                         template = block["contents"]
                         break
                 if template is None:
-                    print("ERROR: template %s not found" % (data[self._cursor[1]-i]["args"][0]))
+                    print("ERROR: template '%s' not found" % (data[self._cursor[1]-i]["args"][0]))
                     return
 
             # If there is a template, load the objects in a dict
@@ -190,9 +191,11 @@ class PyShowSlide(QWidget):
                         prefix = ''
                         if setting["name"] == "addTextBlock":
                             prefix = 'text_'
+                        elif setting["name"] not in template_functions:
+                            print("ERROR: function '%s' not allowed in template" % (setting["name"]))
+                        else:
+                            print("ERROR: unknown function '%s'" % (setting["name"]))
                         objects[prefix + setting["args"][0]] = argstodict(setting["args"][1:])
-
-                print(objects)
 
             # Work through all the commands until the cursor, putting all
             # commands to execute in another dict, so changes in the same
@@ -203,18 +206,22 @@ class PyShowSlide(QWidget):
                 command = data[self._cursor[1]-i+k+1]
 
                 if command["name"] == "setText" or command["name"] == "addTextBlock":
+                    if not template and command["name"] == "setText":
+                        print("ERROR: function '%s' not allowed in template" % (command["name"]))
+                        continue
+
                     # Search the object list for this text object
                     name = "text_" + command["args"][0]
                     text = objects.get(name)
 
                     # If the object exists and we're in addTextBlock: conflict
                     if text and command["name"] == "addTextBlock":
-                        print("ERROR: redefinition of object %s" % (command["args"][0]))
+                        print("ERROR: redefinition of object '%s'" % (command["args"][0]))
                         continue
                     # If the object doesn't exist and we are trying to access
                     # it: conflict
                     elif text is None and command["name"] == "setText":
-                        print("ERROR: text object %s undefined" % (command["args"][0]))
+                        print("ERROR: text object '%s' undefined" % (command["args"][0]))
                         continue
                     # Else, if we are in addTextBlock, we can add it. No case
                     # for if we are in setText, because that's no problem.
@@ -226,7 +233,6 @@ class PyShowSlide(QWidget):
                     # template version to the drawing list first, so all
                     # settings are loaded
                     if not drawingcommands.get(name):
-                        print('Not yet in the drawing list')
                         # Add the command to the drawing list
                         drawingcommands[name] = {}
                         obj = drawingcommands[name]
@@ -240,16 +246,14 @@ class PyShowSlide(QWidget):
 
                     # Make all changes accessible through a dict structure
                     changes = argstodict(command["args"][1:])
-                    print(changes)
 
                     # Now loop through the changes to make them
                     changeText(drawingcommands[name], changes, scale)
 
                 elif command["name"] == "setBackgroundColor":
-                    print(command["args"][0])
                     objects["background_color"] = QColor(command["args"][0])
                 elif command["name"] == "pause":
-                    pass
+                    print('Pause executed')
                 else:
                     print("WARNING: command '%s' unknown" % (command["name"]))
 
@@ -278,7 +282,7 @@ def argstodict(args):
         if len(entry) == 2:
             obj[entry[0][0]] = entry[1]
         else:
-            print("ERROR: value without a key!")
+            print("ERROR: value without a key: '%s'" % (str(entry[0])))
 
     return obj
 
