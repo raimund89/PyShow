@@ -292,9 +292,10 @@ class PyShowSlide(QWidget):
                     painter.setPen(QPen(QColor(task["color"])))
 
                     # Loop through the list
+                    boundingrect = QRect();
                     for item in task["text"]:
                         painter.drawText(QRect(task["x"],
-                                               task["y"],
+                                               task["y"]+boundingrect.height(),
                                                task["width"],
                                                task["height"]),
                                          Qt.TextWordWrap|Qt.TextDontClip|Qt.TextExpandTabs,
@@ -302,21 +303,19 @@ class PyShowSlide(QWidget):
 
                         if task["bullet_type"] == "c":
                             painter.drawText(QRect(task["x"]-100,
-                                                   task["y"]-10,
+                                                   task["y"]-10+boundingrect.height(),
                                                    100,
                                                    task["font"].pixelSize()),
                                              Qt.TextWordWrap,
                                              task["bullet"])
-#                    # Draw the bullets
-#                    numbul = task["text"].count('\n')+1
-#                    if task["bullet_type"] == "c":
-#                        bultext = (task['bullet'] + "\n")*numbul
-#                        painter.drawText(QRect(task["x"]-100*scale,
-#                                               task["y"]-10*scale,
-#                                               100*scale,
-#                                               1000),
-#                                         Qt.TextWordWrap,
-#                                         bultext)
+
+                        print(boundingrect)
+                        boundingrect = painter.boundingRect(QRect(task["x"],
+                                                            task["y"]+boundingrect.height(),
+                                                            task["width"],
+                                                            task["height"]),
+                                                      Qt.TextWordWrap|Qt.TextDontClip|Qt.TextExpandTabs,
+                                                      item)
 
         # Finish drawing
         painter.end()
