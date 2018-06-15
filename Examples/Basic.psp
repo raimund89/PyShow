@@ -40,7 +40,7 @@ beginTemplate('TitlePage')
 				 )
 	# This is not allowed, as it is not a template function, and will
 	# throw an error. It will also do nothing to the template preview.
-	setText('Title', text='Hello!')
+	setTextBox('Title', text='Hello!')
 }
 
 # The slideshow begins here
@@ -51,7 +51,7 @@ beginShow()
 	newSlide('TitlePage')
 	# Change a setting for one of the objects. If it was not visible
 	# yet, it will now become visible
-	setText('Title', text="Introduction")
+	setTextBox('Title', text="Introduction")
 	# You can add new objects on the fly. They will exist until the
 	# next newSlide-command
 	addTextBox('Title3', 
@@ -67,8 +67,8 @@ beginShow()
 	# Change the background color
 	setBackgroundColor('#050')
 	# Change some more objects
-	setText('Title2', text='Contents')
-	setText('Title', text='Bladie\'bla', fontsize=200)
+	setTextBox('Title2', text='Contents')
+	setTextBox('Title', text='Bladie\'bla', fontsize=200)
 	# Wait again. This time not for a mouse or key press, but for
 	# a number of *milli*seconds
 	pause(5000)
@@ -76,8 +76,8 @@ beginShow()
 	# Load a new template, and immediately show all objects
 	newSlide('TitlePage', showall=1)
 	# Update an object with new text
-	setText('Title', text='Hello World!', fontsize=60)
+	setTextBox('Title', text='Hello World!', fontsize=60)
 	# As a new slide is loaded, the object 'Title3' does not exist
 	# anymore and this will give an error.
-	setText('Title3', text='This doesn\'t work')
+	setTextBox('Title3', text='This doesn\'t work')
 }
