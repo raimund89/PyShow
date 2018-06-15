@@ -6,24 +6,38 @@ beginTemplate('TitlePage')
 	# Add a textbox with some styles and parameters assigned
 	addTextBox('Title', 
 				 text='Example Title', 
-				 x=80, 
-				 y=150, 
-				 fontname='Times New Roman', 
-				 fontsize=100, 
+				 x=60, 
+				 y=30,
+				 width=1500,
+				 fontname='Arial', 
+				 fontsize=90, 
 				 decoration='', 
 				 alignment='left', 
 				 color='#FFF')
 	# Add another textbox, with different styles. The first parameter,
 	# the name, should be unique! If not, this will throw an error.
 	addTextBox('Title2',
-				 text='Example Title',
-				 x=80,
+				 text='Example Subtitle',
+				 x=70,
 				 y=150,
 				 fontname='Times New Roman',
-				 fontsize=100,
-				 decoration='biu',
+				 fontsize=70,
+				 decoration='i',
 				 alignment='left',
-				 color='#F0F')
+				 color='#FFF')
+	addBulletList('Simple',
+				  text=["Hi There", 
+						"But what now if it starts to break?!", 
+						"That doesn't work", 
+						"This is funny", 
+						"Does this also break?", 
+						"No!"],
+				  fontname='Times New Roman',
+				  fontsize=60,
+				  x=200,
+				  y=300,
+				  color='#FFF'
+				 )
 	# This is not allowed, as it is not a template function, and will
 	# throw an error. It will also do nothing to the template preview.
 	setText('Title', text='Hello!')
