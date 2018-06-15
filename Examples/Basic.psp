@@ -4,7 +4,7 @@ beginTemplate('TitlePage')
 	# Set the background color for the slide
 	setBackgroundColor('#500')
 	# Add a textbox with some styles and parameters assigned
-	addTextBlock('Title', 
+	addTextBox('Title', 
 				 text='Example Title', 
 				 x=80, 
 				 y=150, 
@@ -15,7 +15,7 @@ beginTemplate('TitlePage')
 				 color='#FFF')
 	# Add another textbox, with different styles. The first parameter,
 	# the name, should be unique! If not, this will throw an error.
-	addTextBlock('Title2', 
+	addTextBox('Title2', 
 				 text='Example Title', 
 				 x=80, 
 				 y=150, 
@@ -40,13 +40,13 @@ beginShow()
 	setText('Title', text="Introduction")
 	# You can add new objects on the fly. They will exist until the
 	# next newSlide-command
-	addTextBlock('Title3', 
-				 text='Hoi',
-				 x=180,
-				 y=1080,
-				 fontsize=300,
-				 color='#FFF',
-				 fontname='Calibri')
+	addTextBox('Title3', 
+			   text='Hoi',
+			   x=180,
+			   y=1080,
+			   fontsize=300,
+			   color='#FFF',
+			   fontname='Calibri')
 	# When the slideshow is running, the execution of the script
 	# will be halted until a key or mousebutton is pressed
 	pause()
