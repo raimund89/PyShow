@@ -28,12 +28,12 @@ sectionList = ["beginTemplate",
                "beginShow",
                ]
 
-template_functions = ["addTextBox",
-                      "setBackgroundColor"
-                      ]
-show_functions = ["newSlide",
-                  "setText",
-                  ]
+template_functions = {"addTextBox": "text",
+                      "setBackgroundColor": ""
+                      }
+show_functions = {"newSlide": "",
+                  "setText": "text",
+                  }
 
 actionList = ["pause"]
 

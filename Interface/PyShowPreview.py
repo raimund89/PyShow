@@ -228,11 +228,10 @@ class PyShowSlide(QWidget):
                         continue
 
                     if not drawingcommands.get(name):
-                        drawingcommands[name] = {}
+                        drawingcommands[name] = {"type": show_functions[command["name"]]}
 
                         if command["name"] == "setText":
-                            drawingcommands[name]["type"] = "text"
-                            changeText(drawingcommands[name], obj, scale)
+                            getattr(self, "change_" + show_functions[command["name"]])(drawingcommands[name], obj, scale)
                         # TODO: Add more commands here. Later, this should be a
                         # dict with function/prefix pairs
 
@@ -243,8 +242,8 @@ class PyShowSlide(QWidget):
                     changes = argstodict(command["args"][1:])
 
                     # Now loop through the changes to make them
-                    if command["name"] == "setText":
-                        changeText(drawingcommands[name], changes, scale)
+
+                    getattr(self, "change_" + show_functions[command["name"]])(drawingcommands[name], changes, scale)
                     # TODO: Add more commands here
 
                 elif command["name"] in template_functions:
@@ -262,12 +261,11 @@ class PyShowSlide(QWidget):
                     objects[name] = argstodict(command["args"][1:])
 
                     # Add the object to the drawing commands
-                    drawingcommands[name] = {}
+                    drawingcommands[name] = {"type": template_functions[command["name"]]}
 
                     # Now draw, depending on the function
-                    if command["name"] == "addTextBox":
-                        drawingcommands[name]["type"] = "text"
-                        changeText(drawingcommands[name], objects[name], scale)
+                    getattr(self, "change_" + template_functions[command["name"]])(drawingcommands[name], objects[name], scale)
+
 
                 else:
                     print("WARNING: command '%s' unknown" % (command["name"]))
@@ -291,6 +289,63 @@ class PyShowSlide(QWidget):
         # Finish drawing
         painter.end()
 
+    def change_text(self, entry, changes, scale):
+        # Make the font object
+        if entry.get("font"):
+            font = entry["font"]
+        else:
+            font = QFont()
+
+        if changes.get("fontname"):
+            font.setFamily(changes["fontname"])
+
+        if changes.get("fontsize"):
+            font.setPointSizeF(changes["fontsize"]*scale)
+
+        # Font decorations allowed:
+        # i - Italic
+        # b - Bold
+        # u - Underline
+        # f - Fixed pitch
+        # k - Kerning
+        # o - Overline
+        # s - Strike out
+        if changes.get("decoration"):
+            if "i" in changes["decoration"]:
+                font.setItalic(True)
+            if "b" in changes["decoration"]:
+                font.setBold(True)
+            if "u" in changes["decoration"]:
+                font.setUnderline(True)
+            if "f" in changes["decoration"]:
+                font.setFixedPitch(True)
+            if "k" in changes["decoration"]:
+                font.setKerning(True)
+            if "o" in changes["decoration"]:
+                font.setOverline(True)
+            if "s" in changes["decoration"]:
+                font.setStrikeOut(True)
+
+        # Other properties
+        # Capitalization
+        # Hinting
+        # Letter Spacing
+        # Stretch
+        # Style, Stylehint, Stylename, Stylestrategy
+        # Word spacing
+        # Weight
+
+        entry["font"] = font
+
+        # Set the text color
+        # TODO: the pen pattern, thickness, shadow, etc.
+        entry["color"] = (changes["color"] if changes.get("color") else (entry["color"] if "color" in entry else "#000"))
+
+        entry["x"] = (changes["x"]*scale if "x" in changes else (entry["x"] if "x" in entry else 0.0))
+        entry["y"] = (changes["y"]*scale if "y" in changes else (entry["y"] if "y" in entry else 0.0))
+
+        entry["text"] = changes["text"] if "text" in changes else (entry["text"] if "text" in entry else "")
+
 def argstodict(args):
     obj = {}
     for entry in args:
@@ -300,60 +355,3 @@ def argstodict(args):
             print("ERROR: value without a key: '%s'" % (str(entry[0])))
 
     return obj
-
-def changeText(entry, changes, scale):
-    # Make the font object
-    if entry.get("font"):
-        font = entry["font"]
-    else:
-        font = QFont()
-
-    if changes.get("fontname"):
-        font.setFamily(changes["fontname"])
-
-    if changes.get("fontsize"):
-        font.setPointSizeF(changes["fontsize"]*scale)
-
-    # Font decorations allowed:
-    # i - Italic
-    # b - Bold
-    # u - Underline
-    # f - Fixed pitch
-    # k - Kerning
-    # o - Overline
-    # s - Strike out
-    if changes.get("decoration"):
-        if "i" in changes["decoration"]:
-            font.setItalic(True)
-        if "b" in changes["decoration"]:
-            font.setBold(True)
-        if "u" in changes["decoration"]:
-            font.setUnderline(True)
-        if "f" in changes["decoration"]:
-            font.setFixedPitch(True)
-        if "k" in changes["decoration"]:
-            font.setKerning(True)
-        if "o" in changes["decoration"]:
-            font.setOverline(True)
-        if "s" in changes["decoration"]:
-            font.setStrikeOut(True)
-
-    # Other properties
-    # Capitalization
-    # Hinting
-    # Letter Spacing
-    # Stretch
-    # Style, Stylehint, Stylename, Stylestrategy
-    # Word spacing
-    # Weight
-
-    entry["font"] = font
-
-    # Set the text color
-    # TODO: the pen pattern, thickness, shadow, etc.
-    entry["color"] = (changes["color"] if changes.get("color") else (entry["color"] if "color" in entry else "#000"))
-
-    entry["x"] = (changes["x"]*scale if "x" in changes else (entry["x"] if "x" in entry else 0.0))
-    entry["y"] = (changes["y"]*scale if "y" in changes else (entry["y"] if "y" in entry else 0.0))
-
-    entry["text"] = changes["text"] if "text" in changes else (entry["text"] if "text" in entry else "")
