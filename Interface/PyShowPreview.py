@@ -18,7 +18,7 @@
 
 import collections
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtGui import QPainter, QColor, QLinearGradient, QFont, QPen
+from PyQt5.QtGui import QPainter, QColor, QLinearGradient, QFont, QPen, QPixmap
 from PyQt5.QtCore import QRect, Qt, QPoint
 from Core.PyShowLanguage import template_functions, show_functions
 
@@ -135,11 +135,8 @@ class PyShowSlide(QWidget):
         print("Redrawing preview")
 
         painter = QPainter()
-        painter.begin(self)
-
-        # Define slide area
-        rect = self.geometry()
-        scale = rect.width()/self._size[0]
+        virtscreen = QPixmap(self._size[0], self._size[1])
+        painter.begin(virtscreen)
 
         # We know the cursor position and the parsed data. We want to know
         # which line corresponds to the cursor position, so we can find the
@@ -206,7 +203,7 @@ class PyShowSlide(QWidget):
                 # If we're previewing a template instead of a show, only
                 # template functions are allowed.
                 if not template and command["name"] not in template_functions:
-                    print("ERROR: function '%s' not allowed in template" % (command["name"]))
+                    print("ERROR: function '%s' not allowed in template block" % (command["name"]))
                     continue
 
                 # Nothing to do for drawing when it's a pause function
@@ -228,10 +225,10 @@ class PyShowSlide(QWidget):
                         continue
 
                     if not drawingcommands.get(name):
+                        print("Not in drawing commands yet")
                         drawingcommands[name] = {"type": show_functions[command["name"]]}
 
-                        if command["name"] == "setText":
-                            getattr(self, "change_" + show_functions[command["name"]])(drawingcommands[name], obj, scale)
+                        getattr(self, "change_" + show_functions[command["name"]])(drawingcommands[name], obj)
                         # TODO: Add more commands here. Later, this should be a
                         # dict with function/prefix pairs
 
@@ -243,7 +240,7 @@ class PyShowSlide(QWidget):
 
                     # Now loop through the changes to make them
 
-                    getattr(self, "change_" + show_functions[command["name"]])(drawingcommands[name], changes, scale)
+                    getattr(self, "change_" + show_functions[command["name"]])(drawingcommands[name], changes)
 
                 elif command["name"] in template_functions:
                     # Exception for the background color
@@ -263,7 +260,7 @@ class PyShowSlide(QWidget):
                     drawingcommands[name] = {"type": template_functions[command["name"]]}
 
                     # Now draw, depending on the function
-                    getattr(self, "change_" + template_functions[command["name"]])(drawingcommands[name], objects[name], scale)
+                    getattr(self, "change_" + template_functions[command["name"]])(drawingcommands[name], objects[name])
 
 
                 else:
@@ -274,8 +271,8 @@ class PyShowSlide(QWidget):
                 color = objects["background_color"]
                 painter.fillRect(QRect(0,
                                        0,
-                                       rect.width(),
-                                       rect.height()),
+                                       virtscreen.width(),
+                                       virtscreen.height()),
                                  color)
 
             # Now go through the drawing list, and execute
@@ -304,10 +301,10 @@ class PyShowSlide(QWidget):
                                          item)
 
                         if task["bullet_type"] == "c":
-                            painter.drawText(QRect(task["x"]-100*scale,
-                                                   task["y"]-10*scale,
-                                                   100*scale,
-                                                   task["font"].pixelSize()*scale),
+                            painter.drawText(QRect(task["x"]-100,
+                                                   task["y"]-10,
+                                                   100,
+                                                   task["font"].pixelSize()),
                                              Qt.TextWordWrap,
                                              task["bullet"])
 #                    # Draw the bullets
@@ -324,8 +321,15 @@ class PyShowSlide(QWidget):
         # Finish drawing
         painter.end()
 
+        painter2 = QPainter()
+        painter2.begin(self)
+        painter2.setRenderHint(QPainter.SmoothPixmapTransform, True)
+        painter2.drawPixmap(QRect(0,0,self.width(),self.height()), virtscreen)
+        painter2.end()
+
     def change_text(self, entry, changes):
         """Change properties of a text object using the changes variable"""
+        print(changes)
         # Make the font object
         if entry.get("font"):
             font = entry["font"]
@@ -384,11 +388,11 @@ class PyShowSlide(QWidget):
 
         entry["text"] = changes["text"] if "text" in changes else (entry["text"] if "text" in entry else "")
 
-    def change_list(self, entry, changes, scale):
+    def change_list(self, entry, changes):
         """Change properties of a bullet list object"""
 
         # Properties are mostly the same as for a text object
-        self.change_text(entry, changes, scale)
+        self.change_text(entry, changes)
 
         # ...except for the bullet type
         # c=character, p=picture
