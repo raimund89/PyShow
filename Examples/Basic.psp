@@ -36,6 +36,7 @@ beginTemplate('TitlePage')
 				  fontsize=60,
 				  x=200,
 				  y=300,
+				  width=600,
 				  color='#FFF'
 				 )
 	# This is not allowed, as it is not a template function, and will
@@ -57,7 +58,7 @@ beginShow()
 	addTextBox('Title3', 
 			   text='Hoi',
 			   x=180,
-			   y=1080,
+			   y=180,
 			   fontsize=300,
 			   color='#FFF',
 			   fontname='Calibri')
