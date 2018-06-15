@@ -36,6 +36,9 @@ functionList = ["setText",
                 "setBackgroundColor"
                 ]
 
+template_functions = ["addTextBlock",
+                      "setBackgroundColor"]
+
 actionList = ["pause"]
 
 
