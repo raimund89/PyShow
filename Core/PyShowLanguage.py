@@ -30,14 +30,12 @@ sectionList = ["beginTemplate",
                "beginShow",
                ]
 
-functionList = ["setText",
-                "addTextBlock",
-                "newSlide",
-                "setBackgroundColor"
-                ]
-
-template_functions = ["addTextBlock",
-                      "setBackgroundColor"]
+template_functions = ["addTextBox",
+                      "setBackgroundColor"
+                      ]
+show_functions = ["newSlide",
+                  "setText",
+                  ]
 
 actionList = ["pause"]
 
@@ -93,7 +91,7 @@ class PyShowParser():
         try:
             parsed = self._expression.parseString(text.replace('\t', ' '),
                                                   parseAll=True)
-            print(parsed.dump())
+            #print(parsed.dump())
             return parsed
         except ParseException as pe:
             print(pe)
@@ -125,7 +123,16 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
         keyword.setForeground(Qt.blue)
         keyword.setFontWeight(QFont.Bold)
 
-        for word in functionList:
+        for word in show_functions:
+            pattern = QRegularExpression("\\b" + word + "\\b")
+            rule = HighlightingRule(pattern, keyword)
+            self.highlightingRules.append(rule)
+
+        keyword = QTextCharFormat()
+        keyword.setForeground(Qt.darkRed)
+        keyword.setFontWeight(QFont.Bold)
+
+        for word in template_functions:
             pattern = QRegularExpression("\\b" + word + "\\b")
             rule = HighlightingRule(pattern, keyword)
             self.highlightingRules.append(rule)
@@ -159,7 +166,7 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
         comment = QTextCharFormat()
         comment.setForeground(Qt.darkGray)
         comment.setFontItalic(True)
-        pattern = QRegularExpression("#[^\n]*")
+        pattern = QRegularExpression("((?<!('|\"))#)[^\n]*")
         rule = HighlightingRule(pattern, comment)
         self.highlightingRules.append(rule)
 

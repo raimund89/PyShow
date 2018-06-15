@@ -15,14 +15,14 @@ beginTemplate('TitlePage')
 				 color='#FFF')
 	# Add another textbox, with different styles. The first parameter,
 	# the name, should be unique! If not, this will throw an error.
-	addTextBox('Title2', 
-				 text='Example Title', 
-				 x=80, 
-				 y=150, 
-				 fontname='Times New Roman', 
-				 fontsize=100, 
-				 decoration='biu', 
-				 alignment='left', 
+	addTextBox('Title2',
+				 text='Example Title',
+				 x=80,
+				 y=150,
+				 fontname='Times New Roman',
+				 fontsize=100,
+				 decoration='biu',
+				 alignment='left',
 				 color='#F0F')
 	# This is not allowed, as it is not a template function, and will
 	# throw an error. It will also do nothing to the template preview.
