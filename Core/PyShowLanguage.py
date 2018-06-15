@@ -28,11 +28,13 @@ sectionList = ["beginTemplate",
                "beginShow",
                ]
 
-template_functions = {"addTextBox": "text",
-                      "setBackgroundColor": ""
+template_functions = {"setBackgroundColor": "",
+                      "addTextBox": "text",
+                      "addBulletList": "list"
                       }
 show_functions = {"newSlide": "",
-                  "setText": "text",
+                  "setTextBox": "text",
+                  "setBulletList": "list",
                   }
 
 actionList = ["pause"]
@@ -60,10 +62,13 @@ class PyShowParser():
         rbr = Literal('}').suppress()
         lp = Literal('(').suppress()
         rp = Literal(')').suppress()
+        lbk = Literal('[').suppress()
+        rbk = Literal(']').suppress()
 
+        strlist= Group(lbk + Optional(delimitedList(string)) + rbk)
         setting = (Group(identifier("key") +
                          eq +
-                         (number | string)("value")))
+                         (number | string | strlist)("value")))
         comment = Group(Literal("#") + SkipTo(LineEnd())).suppress()
 
         self._expression = Forward()
