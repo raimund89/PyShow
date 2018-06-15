@@ -16,10 +16,10 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
+import collections
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QPainter, QColor, QLinearGradient, QFont, QPen
 from PyQt5.QtCore import QRect, Qt, QPoint
-import collections
 from Core.PyShowLanguage import template_functions, show_functions
 
 
@@ -213,7 +213,7 @@ class PyShowSlide(QWidget):
                 if command["name"] == "pause":
                     continue
 
-                if len(command["args"]) ==0:
+                if len(command["args"]) == 0:
                     print("ERROR: not enough arguments, at least the object name should be given")
                     continue
 
@@ -244,7 +244,6 @@ class PyShowSlide(QWidget):
                     # Now loop through the changes to make them
 
                     getattr(self, "change_" + show_functions[command["name"]])(drawingcommands[name], changes, scale)
-                    # TODO: Add more commands here
 
                 elif command["name"] in template_functions:
                     # Exception for the background color
@@ -285,11 +284,12 @@ class PyShowSlide(QWidget):
                 if task["type"] == "text":
                     painter.setFont(task["font"])
                     painter.setPen(QPen(QColor(task["color"])))
-                    painter.drawText(QPoint(task["x"], task["y"]),task["text"])
+                    painter.drawText(QPoint(task["x"], task["y"]), task["text"])
         # Finish drawing
         painter.end()
 
     def change_text(self, entry, changes, scale):
+        """Change properties of a text object using the changes variable"""
         # Make the font object
         if entry.get("font"):
             font = entry["font"]
@@ -347,6 +347,7 @@ class PyShowSlide(QWidget):
         entry["text"] = changes["text"] if "text" in changes else (entry["text"] if "text" in entry else "")
 
 def argstodict(args):
+    """Converts an argument list to a dictionary"""
     obj = {}
     for entry in args:
         if len(entry) == 2:
