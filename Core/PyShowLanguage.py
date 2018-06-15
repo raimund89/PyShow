@@ -22,9 +22,7 @@ from pyparsing import (Word, ParseException, alphas, nums, Forward,
 from PyQt5.QtCore import Qt, QRegularExpression
 from PyQt5.QtGui import QTextCharFormat, QFont, QSyntaxHighlighter
 
-# TODO: parser currently allows for random text after the right parenthesis
 # TODO: function that tells the editor which lines have errors/warnings
-# TODO: an actual parsing code
 
 sectionList = ["beginTemplate",
                "beginShow",
