@@ -17,11 +17,18 @@
 """
 
 import sys
+import ctypes
+import os
 from PyQt5.QtWidgets import QApplication
 from Interface.PyShowWindow import PyShowWindow
 
 if __name__ == '__main__':
     # Main entry point of PyShow
     app = QApplication(sys.argv)
+
+    if os.name == 'nt':
+        appid = u'pyshow.application'
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
+
     w = PyShowWindow(sys.argv)
     sys.exit(app.exec_())
