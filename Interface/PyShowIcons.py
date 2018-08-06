@@ -16,6 +16,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
+# TODO: Combine icons if different sizes in one QIcon
+# TODO: add white app icon, and check which is better with taskbar color.
+
 from PyQt5.QtGui import QIcon, QPixmap
 
 
@@ -25,6 +28,7 @@ class PyShowIcons:
     def __init__(self):
         self._icons = {}
 
+        self.load_icon("pyshow_icon")
         self.load_icon("file_new")
         self.load_icon("file_open")
         self.load_icon("file_save")

@@ -37,6 +37,7 @@ class PyShowWindow(QMainWindow):
         self._icons = PyShowIcons()
         self._project = None
 
+        self.setWindowIcon(self._icons.icon("pyshow_icon"))
         self.init_actions()
         self.init_ui()
 
