@@ -3,3 +3,13 @@ Make your presentations scriptable! This Python and PyQt5 based slide show IDE l
 
 # Current development status
 I'm slowly developing this software in my free time. No guarantees that a new commit won't break the software :) Stick to the releases if you want any kind of stability, although I also cannot guarantee that :P
+
+# Features for future implementation
+- Include directive, to for example include a template file
+- Support for URLs for images, gifs, videos, audio, includes, etc.
+- Compilation of presentation into a standalone file (exe/py?)
+- Support for plot generation from data
+- Functions, for repetative actions
+- Re-usable resources (images, videos, etc.) so loading is only done once
+- Notes for presenter when using double screen
+- Quick navigation (for example for Q&A session)
