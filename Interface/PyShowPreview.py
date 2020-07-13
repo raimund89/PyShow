@@ -18,9 +18,12 @@
 
 import collections
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtGui import QPainter, QColor, QLinearGradient, QFont, QPen, QPixmap
-from PyQt5.QtCore import QRect, Qt, QPoint
+from PyQt5.QtGui import QPainter, QColor, QLinearGradient, QFont, QPen, QPixmap, QFontMetrics
+from PyQt5.QtCore import QRect, Qt
 from Core.PyShowLanguage import template_functions, show_functions
+
+#TODO: The code needs to indicate when text is out of bounds. Draw it anyway, and give a warning I think.
+#TODO: Support for nested bullet lists
 
 
 class PyShowPreview(QWidget):
@@ -292,30 +295,29 @@ class PyShowSlide(QWidget):
                     painter.setPen(QPen(QColor(task["color"])))
 
                     # Loop through the list
-                    boundingrect = QRect();
+                    fm = QFontMetrics(task["font"])
+                    nextheight = 0
+                                        
                     for item in task["text"]:
-                        painter.drawText(QRect(task["x"],
-                                               task["y"]+boundingrect.height(),
-                                               task["width"],
-                                               task["height"]),
-                                         Qt.TextWordWrap|Qt.TextDontClip|Qt.TextExpandTabs,
-                                         item)
-
-                        if task["bullet_type"] == "c":
-                            painter.drawText(QRect(task["x"]-100,
-                                                   task["y"]-10+boundingrect.height(),
-                                                   100,
-                                                   task["font"].pixelSize()),
-                                             Qt.TextWordWrap,
-                                             task["bullet"])
-
-                        print(boundingrect)
-                        boundingrect = painter.boundingRect(QRect(task["x"],
-                                                            task["y"]+boundingrect.height(),
-                                                            task["width"],
-                                                            task["height"]),
-                                                      Qt.TextWordWrap|Qt.TextDontClip|Qt.TextExpandTabs,
-                                                      item)
+                         painter.drawText(QRect(task["x"],
+                                                task["y"] + nextheight,
+                                                task["width"],
+                                                task["height"]),
+                                          Qt.TextWordWrap|Qt.TextDontClip|Qt.TextExpandTabs,
+                                          item)
+                        
+                         if task["bullet_type"] == "c":
+                             painter.drawText(QRect(task["x"] - 100,
+                                                    task["y"] - 7 + nextheight,
+                                                    task["width"],
+                                                    task["height"]),
+                                              Qt.TextWordWrap,
+                                              task["bullet"])
+                        
+                         r = fm.boundingRect(0, 0, task["width"], 999999,
+                                             Qt.TextWordWrap|Qt.TextDontClip|Qt.TextExpandTabs,
+                                             item)
+                         nextheight = nextheight + r.height()
 
         # Finish drawing
         painter.end()
