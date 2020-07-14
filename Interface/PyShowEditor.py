@@ -1,19 +1,26 @@
+# PyShow - a slide show IDE and scripting language.
+#
+# Copyright (C) 2017  Raimond Frentrop
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
 """
-    PyShow - a slide show IDE and scripting language
-    Copyright (C) 2017  Raimond Frentrop
+Class containing methods for the editor pane.
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program. If not, see <http://www.gnu.org/licenses/>.
+The editor pane is responsible for highlighting, changing content when pasted
+from the clipboard, and updating indications of line numbers. Any code changes
+also need to trigger an update of the preview window.
 """
 
 import math
@@ -28,7 +35,7 @@ from Core.PyShowLanguage import PyShowParser, PyShowEditorHighlighter
 
 
 class PyShowEditor(QTextEdit):
-    """The main editor for the PyShow software"""
+    """The main editor for the PyShow software."""
 
     def __init__(self):
         super().__init__()
@@ -93,12 +100,11 @@ class PyShowEditor(QTextEdit):
         self._parser = PyShowParser(self)
 
     def update_viewport(self):
-        """Update the viewport from the line number area width"""
+        """Update the viewport from the line number area width."""
         self.setViewportMargins(self.line_number_area.get_width(), 0, 0, 0)
 
     def updatelinenumbers(self):
-        """Update the line numbers after any change in the viewport"""
-
+        """Update the line numbers after any change in the viewport."""
         # This is a necessary step to avoid unexpected values for
         # the scrollbar position
         self.verticalScrollBar().\
@@ -113,8 +119,7 @@ class PyShowEditor(QTextEdit):
                                      self.height())
 
     def get_first_block_id(self):
-        """Get the ID of the first visible text block in the editor"""
-
+        """Get the ID of the first visible text block in the editor."""
         # Ask for a cursor and set it to the beginning of the document
         curs = QTextCursor(self.document())
         curs.movePosition(QTextCursor.Start)
@@ -144,8 +149,7 @@ class PyShowEditor(QTextEdit):
         return 0
 
     def paint_line_numbers(self, event):
-        """Actually paint the numbers in the line number area"""
-
+        """Actually paint the numbers in the line number area."""
         # Get the painter instance for the line number area,
         # fill the line number area background and set it's font
         painter = QPainter(self.line_number_area)
@@ -206,8 +210,7 @@ class PyShowEditor(QTextEdit):
         self.highlight_current_line()
 
     def resizeEvent(self, event):
-        """React to a resize event"""
-
+        """React to a resize event."""
         # The QTextEdit should act on the event like it normally would
         super().resizeEvent(event)
 
@@ -218,8 +221,7 @@ class PyShowEditor(QTextEdit):
                                           self.height())
 
     def highlight_current_line(self):
-        """Highlight the entire active line in the editor area"""
-
+        """Highlight the entire active line in the editor area."""
         # Make an extraSelection, set it's formatting properties,
         # and apply it to the entire line under the cursor
         selection = QTextEdit.ExtraSelection()
@@ -230,7 +232,7 @@ class PyShowEditor(QTextEdit):
         self.setExtraSelections([selection])
 
     def wheelEvent(self, event):
-        """Increase/decrease editor font size"""
+        """Increase/decrease editor font size."""
         if event.modifiers() & Qt.ControlModifier:
             fnt = self.font()
             fntsize = fnt.pointSize()
@@ -252,13 +254,11 @@ class PyShowEditor(QTextEdit):
             super().wheelEvent(event)
 
     def insertFromMimeData(self, source):
-        """When the user pastes something from the clipboard, convert
-           to plain text before doing that"""
+        """Convert data from the clipboard to plain text before inserting."""
         self.insertPlainText(source.text())
 
     def keyPressEvent(self, event):
-        """If the user uses TAB, indent lines instead of replace by a TAB"""
-
+        """If the user uses TAB, indent lines instead of replace by a TAB."""
         if event.key() != Qt.Key_Tab and event.key() != Qt.Key_Backtab:
             super().keyPressEvent(event)
             return
@@ -339,7 +339,7 @@ class PyShowEditor(QTextEdit):
 
 
 class PyShowEditorLineNumberArea(QWidget):
-    """The line number area in the main PyShow editor"""
+    """The line number area in the main PyShow editor."""
 
     def __init__(self, editor):
         super().__init__(editor)
@@ -347,14 +347,14 @@ class PyShowEditorLineNumberArea(QWidget):
         self._editor = editor
 
     def get_width(self):
-        """Calculate the width of the line number area"""
+        """Calculate the width of the line number area."""
         digits = math.floor(math.log10(self._editor.document().blockCount()))+1
         return 25 + self._editor.fontMetrics().width('9') * digits
 
     def sizeHint(self):
-        """Return the size of the line number area"""
+        """Return the size of the line number area."""
         return QSize(self.get_width(), 0)
 
     def paintEvent(self, event):
-        """A paint request is triggered, so pass it on"""
+        """Paint request is triggered, so pass it on."""
         self._editor.paint_line_numbers(event)

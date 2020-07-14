@@ -1,19 +1,25 @@
+# PyShow - a slide show IDE and scripting language.
+#
+# Copyright (C) 2017  Raimond Frentrop
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
 """
-    PyShow - a slide show IDE and scripting language
-    Copyright (C) 2017  Raimond Frentrop
+Class to interpret the presentation language used in PyShow.
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program. If not, see <http://www.gnu.org/licenses/>.
+It uses QRegularExpressions to make a map of the code and allow the editor
+to highlight everything in the proper way.
 """
 
 from pyparsing import (Word, ParseException, alphas, nums, Forward,
@@ -41,7 +47,7 @@ actionList = ["pause"]
 
 
 class PyShowParser():
-    """Parser for the PyShow language"""
+    """Parser for the PyShow language."""
 
     def __init__(self, editor):
         self._editor = editor
@@ -65,7 +71,7 @@ class PyShowParser():
         lbk = Literal('[').suppress()
         rbk = Literal(']').suppress()
 
-        strlist= Group(lbk + Optional(delimitedList(string)) + rbk)
+        strlist = Group(lbk + Optional(delimitedList(string)) + rbk)
         setting = (Group(identifier("key") +
                          eq +
                          (number | string | strlist)("value")))
@@ -85,7 +91,7 @@ class PyShowParser():
         self._expression << OneOrMore(script | comment.suppress())
 
     def parse(self):
-
+        """Parse the text currently in the editor."""
         text = self._editor.toPlainText()
 
         if len(text) == 0:
@@ -94,7 +100,7 @@ class PyShowParser():
         try:
             parsed = self._expression.parseString(text.replace('\t', ' '),
                                                   parseAll=True)
-            #print(parsed.dump())
+            # print(parsed.dump())
             return parsed
         except ParseException as pe:
             print(pe)
@@ -102,7 +108,7 @@ class PyShowParser():
 
 
 class PyShowEditorHighlighter(QSyntaxHighlighter):
-    """The highlighter class providing the syntax highlighting"""
+    """The highlighter class providing the syntax highlighting."""
 
     # List of keywords
     operators = ['+', '-', '*', '/']
@@ -174,7 +180,7 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
         self.highlightingRules.append(rule)
 
     def highlightBlock(self, text):
-        """Process the given text using the highlighting rules"""
+        """Process the given text using the highlighting rules."""
         for rule in self.highlightingRules:
             iterator = rule.pattern.globalMatch(text)
             while iterator.hasNext():
@@ -185,7 +191,7 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
 
 
 class HighlightingRule():
-    """A simple structure that contains the pattern and format for a rule"""
+    """A simple structure that contains the pattern and format for a rule."""
 
     def __init__(self, pattern, formatting):
         self.pattern = pattern

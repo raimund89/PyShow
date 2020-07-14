@@ -1,33 +1,41 @@
+# PyShow - a slide show IDE and scripting language.
+#
+# Copyright (C) 2017  Raimond Frentrop
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
 """
-    PyShow - a slide show IDE and scripting language
-    Copyright (C) 2017  Raimond Frentrop
+Class responsible for rendering the presentation preview on the preview window.
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program. If not, see <http://www.gnu.org/licenses/>.
+It takes care of reading changes in the presentation code, and changing the
+preview accordingly.
 """
 
 import collections
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtGui import QPainter, QColor, QLinearGradient, QFont, QPen, QPixmap, QFontMetrics
+from PyQt5.QtGui import (QPainter, QColor, QLinearGradient, QFont, QPen,
+                         QPixmap, QFontMetrics)
 from PyQt5.QtCore import QRect, Qt
 from Core.PyShowLanguage import template_functions, show_functions
 
-#TODO: The code needs to indicate when text is out of bounds. Draw it anyway, and give a warning I think.
-#TODO: Support for nested bullet lists
+# TODO: The code needs to indicate when text is out of bounds. Draw it anyway,
+# and give a warning I think.
+# TODO: Support for nested bullet lists
 
 
 class PyShowPreview(QWidget):
-    """The preview area in the PyShow window"""
+    """The preview area in the PyShow window."""
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -39,7 +47,7 @@ class PyShowPreview(QWidget):
         self._slide = PyShowSlide(self)
 
     def initialize(self):
-        """Initialize the preview size (and splitter width) and slide size"""
+        """Initialize the preview size (and splitter width) and slide size."""
         rect = self._splitter.geometry()
         self.setGeometry(0, 0, rect.width()*0.75, rect.height())
 
@@ -47,8 +55,7 @@ class PyShowPreview(QWidget):
         self._slide.set_size(1920, 1080)
 
     def get_slide_rect(self):
-        """Returns the geometry of the slide in the preview"""
-
+        """Return the geometry of the slide in the preview."""
         # Define slide area
         rect = self.geometry()
         x = 50
@@ -65,8 +72,7 @@ class PyShowPreview(QWidget):
         return QRect(x, y, width, height)
 
     def resizeEvent(self, event=None):
-        """Called when the preview needs to be resized"""
-
+        """Call when the preview needs to be resized."""
         rect = self.get_slide_rect()
         self._slide.setGeometry(rect.x(),
                                 rect.y(),
@@ -74,8 +80,7 @@ class PyShowPreview(QWidget):
                                 rect.height())
 
     def paintEvent(self, event):
-        """Called when the preview needs to be updated"""
-
+        """Call when the preview needs to be updated."""
         painter = QPainter()
         painter.begin(self)
 
@@ -100,12 +105,12 @@ class PyShowPreview(QWidget):
         painter.end()
 
     def refresh(self, data, cursor):
-        """Called when an update of the GUI is necessary"""
+        """Call when an update of the GUI is necessary."""
         self._slide.refresh(data, cursor)
 
 
 class PyShowSlide(QWidget):
-    """The actual slide inside the preview widget"""
+    """The actual slide inside the preview widget."""
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -118,23 +123,22 @@ class PyShowSlide(QWidget):
         self._data = None
 
     def set_size(self, width, height):
-        """Set the slide size in pixels"""
+        """Set the slide size in pixels."""
         self._size = (width, height)
         self._parent.resizeEvent()
 
     def size(self):
-        """Returns the slide size in pixels"""
+        """Return the slide size in pixels."""
         return self._size
 
     def refresh(self, data, cursor):
-        """Refresh the preview with new parsed data or cursor position"""
+        """Refresh the preview with new parsed data or cursor position."""
         self._data = data
         self._cursor = cursor
         self.update()
 
     def paintEvent(self, event):
-        """Called when the slide preview needs to be updated"""
-
+        """Call when the slide preview needs to be updated."""
         print("Redrawing preview")
 
         painter = QPainter()
@@ -174,7 +178,8 @@ class PyShowSlide(QWidget):
                         template = block["contents"]
                         break
                 if template is None:
-                    print("ERROR: template '%s' not found" % (data[self._cursor[1]-i]["args"][0]))
+                    print("ERROR: template '%s' not found"
+                          % (data[self._cursor[1]-i]["args"][0]))
                     return
 
             # If there is a template, load the objects in a dict
@@ -193,7 +198,8 @@ class PyShowSlide(QWidget):
                         elif setting["name"] in show_functions:
                             print("ERROR: function '%s' not allowed in template" % (setting["name"]))
                         else:
-                            print("ERROR: unknown template function '%s'" % (setting["name"]))
+                            print("ERROR: unknown template function '%s'"
+                                  % (setting["name"]))
 
             # Work through all the commands until the cursor, putting all
             # commands to execute in another dict, so changes in the same
@@ -206,7 +212,8 @@ class PyShowSlide(QWidget):
                 # If we're previewing a template instead of a show, only
                 # template functions are allowed.
                 if not template and command["name"] not in template_functions:
-                    print("ERROR: function '%s' not allowed in template block" % (command["name"]))
+                    print("ERROR: function '%s' not allowed in template block"
+                          % (command["name"]))
                     continue
 
                 # Nothing to do for drawing when it's a pause function
@@ -263,8 +270,8 @@ class PyShowSlide(QWidget):
                     drawingcommands[name] = {"type": template_functions[command["name"]]}
 
                     # Now draw, depending on the function
-                    getattr(self, "change_" + template_functions[command["name"]])(drawingcommands[name], objects[name])
-
+                    getattr(self,
+                            "change_" + template_functions[command["name"]])(drawingcommands[name], objects[name])
 
                 else:
                     print("WARNING: command '%s' unknown" % (command["name"]))
@@ -279,6 +286,7 @@ class PyShowSlide(QWidget):
                                  color)
 
             # Now go through the drawing list, and execute
+            textflags = Qt.TextWordWrap | Qt.TextDontClip | Qt.TextExpandTabs
             for entry in drawingcommands:
                 task = drawingcommands[entry]
                 if task["type"] == "text":
@@ -288,7 +296,7 @@ class PyShowSlide(QWidget):
                                            task["y"],
                                            task["width"],
                                            task["height"]),
-                                     Qt.TextWordWrap|Qt.TextDontClip|Qt.TextExpandTabs,
+                                     textflags,
                                      task["text"])
                 if task["type"] == "list":
                     painter.setFont(task["font"])
@@ -297,27 +305,27 @@ class PyShowSlide(QWidget):
                     # Loop through the list
                     fm = QFontMetrics(task["font"])
                     nextheight = 0
-                                        
+
                     for item in task["text"]:
-                         painter.drawText(QRect(task["x"],
-                                                task["y"] + nextheight,
-                                                task["width"],
-                                                task["height"]),
-                                          Qt.TextWordWrap|Qt.TextDontClip|Qt.TextExpandTabs,
-                                          item)
-                        
-                         if task["bullet_type"] == "c":
-                             painter.drawText(QRect(task["x"] - 100,
-                                                    task["y"] - 7 + nextheight,
-                                                    task["width"],
-                                                    task["height"]),
-                                              Qt.TextWordWrap,
-                                              task["bullet"])
-                        
-                         r = fm.boundingRect(0, 0, task["width"], 999999,
-                                             Qt.TextWordWrap|Qt.TextDontClip|Qt.TextExpandTabs,
-                                             item)
-                         nextheight = nextheight + r.height()
+                        painter.drawText(QRect(task["x"],
+                                               task["y"] + nextheight,
+                                               task["width"],
+                                               task["height"]),
+                                         textflags,
+                                         item)
+
+                        if task["bullet_type"] == "c":
+                            painter.drawText(QRect(task["x"] - 100,
+                                                   task["y"] - 7 + nextheight,
+                                                   task["width"],
+                                                   task["height"]),
+                                             Qt.TextWordWrap,
+                                             task["bullet"])
+
+                        r = fm.boundingRect(0, 0, task["width"], 999999,
+                                            textflags,
+                                            item)
+                        nextheight = nextheight + r.height()
 
         # Finish drawing
         painter.end()
@@ -325,11 +333,15 @@ class PyShowSlide(QWidget):
         painter2 = QPainter()
         painter2.begin(self)
         painter2.setRenderHint(QPainter.SmoothPixmapTransform, True)
-        painter2.drawPixmap(QRect(0,0,self.width(),self.height()), virtscreen)
+        painter2.drawPixmap(QRect(0,
+                                  0,
+                                  self.width(),
+                                  self.height()),
+                            virtscreen)
         painter2.end()
 
     def change_text(self, entry, changes):
-        """Change properties of a text object using the changes variable"""
+        """Change properties of a text object using the changes variable."""
         print(changes)
         # Make the font object
         if entry.get("font"):
@@ -380,29 +392,68 @@ class PyShowSlide(QWidget):
 
         # Set the text color
         # TODO: the pen pattern, thickness, shadow, etc.
-        entry["color"] = (changes["color"] if changes.get("color") else (entry["color"] if "color" in entry else "#000"))
+        entry["color"] = (changes["color"]
+                          if changes.get("color")
+                          else (entry["color"]
+                                if "color" in entry
+                                else "#000")
+                          )
 
-        entry["x"] = (changes["x"] if "x" in changes else (entry["x"] if "x" in entry else 0.0))
-        entry["y"] = (changes["y"] if "y" in changes else (entry["y"] if "y" in entry else 0.0))
-        entry["width"] = (changes["width"] if "width" in changes else (entry["width"] if "width" in entry else 500.0))
-        entry["height"] = (changes["height"] if "height" in changes else (entry["height"] if "height" in entry else 300.0))
+        entry["x"] = (changes["x"]
+                      if "x" in changes
+                      else (entry["x"]
+                            if "x" in entry
+                            else 0.0)
+                      )
+        entry["y"] = (changes["y"]
+                      if "y" in changes
+                      else (entry["y"]
+                            if "y" in entry
+                            else 0.0)
+                      )
+        entry["width"] = (changes["width"]
+                          if "width" in changes
+                          else (entry["width"]
+                                if "width" in entry
+                                else 500.0)
+                          )
+        entry["height"] = (changes["height"]
+                           if "height" in changes
+                           else (entry["height"]
+                                 if "height" in entry
+                                 else 300.0)
+                           )
 
-        entry["text"] = changes["text"] if "text" in changes else (entry["text"] if "text" in entry else "")
+        entry["text"] = (changes["text"]
+                         if "text" in changes
+                         else (entry["text"]
+                               if "text" in entry
+                               else "")
+                         )
 
     def change_list(self, entry, changes):
-        """Change properties of a bullet list object"""
-
+        """Change properties of a bullet list object."""
         # Properties are mostly the same as for a text object
         self.change_text(entry, changes)
 
         # ...except for the bullet type
         # c=character, p=picture
-        entry["bullet_type"] = changes["bullet_type"] if "bullet_type" in changes else (entry["bullet_type"] if "bullet_type" in entry else "c")
-        entry["bullet"] = changes["bullet"] if "bullet" in changes else (entry["bullet"] if "bullet" in entry else "■")
+        entry["bullet_type"] = (changes["bullet_type"]
+                                if "bullet_type" in changes
+                                else (entry["bullet_type"]
+                                      if "bullet_type" in entry
+                                      else "c")
+                                )
+        entry["bullet"] = (changes["bullet"]
+                           if "bullet" in changes
+                           else (entry["bullet"]
+                                 if "bullet" in entry
+                                 else "■")
+                           )
 
 
 def argstodict(args):
-    """Converts an argument list to a dictionary"""
+    """Convert an argument list to a dictionary."""
     obj = {}
     for entry in args:
         if len(entry) == 2:

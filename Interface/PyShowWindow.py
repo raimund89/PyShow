@@ -1,34 +1,39 @@
+# PyShow - a slide show IDE and scripting language.
+#
+# Copyright (C) 2017  Raimond Frentrop
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
 """
-    PyShow - a slide show IDE and scripting language
-    Copyright (C) 2017  Raimond Frentrop
+The main PyShow window.
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program. If not, see <http://www.gnu.org/licenses/>.
+Class taking care of populating the main PyShow window, as well as the menus
+and shortcut registration.
 """
 
-from PyQt5.QtWidgets import (QMainWindow, QAction, QMenu, QSplitter,
-                             QWidget, QMessageBox)
+from PyQt5.QtWidgets import (QMainWindow, QAction, QSplitter,
+                             QMessageBox)
 from Interface.PyShowRibbon import PyShowRibbon, PyShowRibbonPushButton
 from Interface.PyShowIcons import PyShowIcons
 from Interface.PyShowStatusbar import PyShowStatusbar
 from Interface.PyShowEditor import PyShowEditor
 from Interface.PyShowPreview import PyShowPreview
 from Core.PyShowProject import PyShowProject
-from pprint import pprint
 
 
 class PyShowWindow(QMainWindow):
-    """The main PyShow window, containing all UI components"""
+    """The main PyShow window, containing all UI components."""
 
     def __init__(self, args):
         super().__init__()
@@ -42,7 +47,7 @@ class PyShowWindow(QMainWindow):
         self.init_ui()
 
     def init_actions(self):
-        """Initialize all actions that can be performed in this window"""
+        """Initialize all actions that can be performed in this window."""
         # New file action
         action = QAction(self._icons.icon("file_new"), "New\nproject", self)
         action.setShortcut('Ctrl+N')
@@ -69,8 +74,7 @@ class PyShowWindow(QMainWindow):
         self._actions['file_print'] = action
 
     def init_ui(self):
-        """Initialize the window settings and all UI components"""
-
+        """Initialize the window settings and all UI components."""
         # Some basic setup for the window
         self.setWindowTitle('PyShow')
         self.resize(1280, 800)
@@ -90,8 +94,8 @@ class PyShowWindow(QMainWindow):
         self._splitter = QSplitter()
         self._splitter.setChildrenCollapsible(False)
         self._splitter.setStyleSheet("QSplitter::handle {"
-                                         "width: 1px;"
-                                         "border: 1px solid #DDD;"
+                                     "width: 1px;"
+                                     "border: 1px solid #DDD;"
                                      "}")
         self.setCentralWidget(self._splitter)
 
@@ -110,7 +114,7 @@ class PyShowWindow(QMainWindow):
         self.editor.cursorPositionChanged.connect(self.updatepreview)
 
     def init_ribbon(self):
-        """Initialize the Ribbon bar with all components in it"""
+        """Initialize the Ribbon bar with all components in it."""
         self._ribbon = PyShowRibbon(self)
         self.addToolBar(self._ribbon)
 
@@ -128,8 +132,7 @@ class PyShowWindow(QMainWindow):
         file_print.add_widget(PyShowRibbonPushButton(self, self._actions['file_print'], 3))
 
     def on_file_new(self):
-        """Closing any current project and beginning a new project"""
-
+        """Close any current project and beginning a new project."""
         # If we have an open project, first close it
         if self._project.opened and self._project.changed():
             reply = QMessageBox.warning(self, "PyShow", "Do you want to save the current project?\n\nIf you don't save before opening a new project, all changes will be lost!", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
@@ -147,8 +150,7 @@ class PyShowWindow(QMainWindow):
         self._project.new()
 
     def on_file_open(self):
-        """Closing any current project and opening an existing project"""
-
+        """Close any current project and opening an existing project."""
         # If we have an open project, first close it
         if self._project.opened and self._project.changed():
             reply = QMessageBox.warning(self, "PyShow", "Do you want to save the current project?\n\nIf you don't save before opening a new project, all changes will be lost!", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
@@ -161,17 +163,15 @@ class PyShowWindow(QMainWindow):
         self._project.open()
 
     def on_file_save(self):
-        """Saving the currently open project"""
-
+        """Save the currently open project."""
         self._project.save()
 
     def on_file_print(self):
-        """Open the printing wizard and print the current project"""
+        """Open the printing wizard and print the current project."""
         pass
 
     def closeEvent(self, event):
-        """Called when user closes the PyShow main window"""
-
+        """Call when user closes the PyShow main window."""
         # If we have an open project, first close it
         if self._project.opened and self._project.changed():
             reply = QMessageBox.warning(self, "PyShow", "Do you want to save the current project?\n\nIf you don't save before opening a new project, all changes will be lost!", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
@@ -187,15 +187,14 @@ class PyShowWindow(QMainWindow):
         self._project.close()
 
     def enable_action(self, name, enabled):
-        """Enables or disables an action with the given name"""
-
+        """Enable or disable an action with the given name."""
         if name in self._actions:
             self._actions[name].setEnabled(enabled)
         else:
             print("No such action")
 
     def updatepreview(self):
-        """Updating the preview depending on the cursor position"""
+        """Update the preview depending on the cursor position."""
         parsed = self.editor._parser.parse()
 
         if parsed is None:

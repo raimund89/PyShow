@@ -1,19 +1,26 @@
+# PyShow - a slide show IDE and scripting language.
+#
+# Copyright (C) 2017  Raimond Frentrop
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
 """
-    PyShow - a slide show IDE and scripting language
-    Copyright (C) 2017  Raimond Frentrop
+Class responsible for populating the window ribbon.
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program. If not, see <http://www.gnu.org/licenses/>.
+Many apps nowadays use this ribbon style, and especially in an office
+application like this, it's very useful. The code styles the ribbon according
+to the menu specified by the application window.
 """
 
 from PyQt5.QtCore import Qt, QSize
@@ -23,7 +30,7 @@ from PyQt5.QtGui import QPainter, QColor
 
 
 class PyShowRibbon(QToolBar):
-    """The RibbonBar for the PyShow main window"""
+    """The RibbonBar for the PyShow main window."""
 
     def __init__(self, parent):
         super().__init__()
@@ -44,7 +51,7 @@ class PyShowRibbon(QToolBar):
         self.makeup()
 
     def add_tab(self, name):
-        """Add a new tab to the RibbonBar"""
+        """Add a new tab to the RibbonBar."""
         # Make a new ribbon tab widget
         tab = PyShowRibbonTab(self)
         # Give the tab a name so we can activate it later when necessary
@@ -62,13 +69,12 @@ class PyShowRibbon(QToolBar):
         return tab
 
     def set_active(self, name):
-        """Set a tab of the RibbonBar as active"""
+        """Set a tab of the RibbonBar as active."""
         # Select a tab by name
         self.setCurrentWidget(self.findChild(PyShowRibbonTab, 'tab_' + name))
 
     def makeup(self):
-        """Style the RibbonBar so it looks cool"""
-
+        """Style the RibbonBar so it looks cool."""
         # The top-most widget
         self.setStyleSheet("background-color: white;"
                            "border: none;"
@@ -76,46 +82,46 @@ class PyShowRibbon(QToolBar):
 
         # The tab view widget
         self._widget.setStyleSheet("QTabWidget:pane {"
-                                       "background-color: white;"
-                                       "border-top: 1px solid #DDD;"
-                                       "border-bottom: 1px solid #DDD;"
-                                       "top: -1px;"
-                                       "margin: 0px;"
-                                       "padding: 0px;"
-                                       "}"
+                                   "background-color: white;"
+                                   "border-top: 1px solid #DDD;"
+                                   "border-bottom: 1px solid #DDD;"
+                                   "top: -1px;"
+                                   "margin: 0px;"
+                                   "padding: 0px;"
+                                   "}"
                                    "QTabBar { "
-                                       "font-size: 10pt;"
+                                   "font-size: 10pt;"
                                    "}"
                                    "QTabBar::tab{"
-                                       "background-color: white;"
-                                       "padding: 6px 12px 6px 12px;"
-                                       "color: #333;"
-                                       "border-bottom: 1px solid #DDD;"
+                                   "background-color: white;"
+                                   "padding: 6px 12px 6px 12px;"
+                                   "color: #333;"
+                                   "border-bottom: 1px solid #DDD;"
                                    "}"
                                    "QTabBar::tab::hover{"
-                                       "color: #D15E00;"
+                                   "color: #D15E00;"
                                    "}"
                                    "QTabBar::tab::selected{"
-                                       "border: 1px solid #DDD;"
-                                       "border-bottom: 1px solid #FFF;"
-                                       "color: #D15E00;"
+                                   "border: 1px solid #DDD;"
+                                   "border-bottom: 1px solid #FFF;"
+                                   "color: #D15E00;"
                                    "}"
                                    "QTabBar::tab::disabled {"
-                                       "width: 4px;"
-                                       "margin: 0px;"
-                                       "padding: 0px;"
-                                       "background: transparent;"
-                                       "color: transparent;"
+                                   "width: 4px;"
+                                   "margin: 0px;"
+                                   "padding: 0px;"
+                                   "background: transparent;"
+                                   "color: transparent;"
                                    "}"
                                    "QTabWidget::tab-bar{left:2px;}")
 
     def __getitem__(self, name):
-        """Get a tab by name"""
+        """Get a tab by name."""
         return self.findChild(PyShowRibbonTab, 'tab_' + name)
 
 
 class PyShowRibbonTab(QWidget):
-    """Tab that can reside in the RibbonBar"""
+    """Tab that can reside in the RibbonBar."""
 
     def __init__(self, parent):
         super().__init__()
@@ -138,20 +144,18 @@ class PyShowRibbonTab(QWidget):
         self.makeup()
 
     def add_pane(self, name):
-        """Add a pane to the tab, which contains controls"""
-
+        """Add a pane to the tab, which contains controls."""
         pane = PyShowRibbonPane(self, name)
         self.layout().addWidget(pane)
         return pane
 
     def makeup(self):
-        """Style the tab so it looks cool"""
-
+        """Style the tab so it looks cool."""
         pass
 
 
 class PyShowRibbonPane(QWidget):
-    """A pane in the ribbon tab, to organize the controls on the tab"""
+    """A pane in the ribbon tab, to organize the controls on the tab."""
 
     def __init__(self, parent, name):
         super().__init__(parent)
@@ -192,12 +196,12 @@ class PyShowRibbonPane(QWidget):
         content.setLayout(content_layout)
 
     def add_widget(self, widget):
-        """Add a control to the ribbon pane"""
+        """Add a control to the ribbon pane."""
         self.contentLayout.addWidget(widget, 0, Qt.AlignTop)
 
 
 class PyShowRibbonSeparator(QWidget):
-    """The separator between ribbon panes"""
+    """The separator between ribbon panes."""
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -208,7 +212,7 @@ class PyShowRibbonSeparator(QWidget):
         self.setLayout(QHBoxLayout())
 
     def paintEvent(self, event):
-        """Paint the single separator line"""
+        """Paint the single separator line."""
         qp = QPainter()
         qp.begin(self)
         qp.fillRect(event.rect(), QColor("#DDDDDD"))
@@ -216,7 +220,7 @@ class PyShowRibbonSeparator(QWidget):
 
 
 class PyShowRibbonPushButton(QToolButton):
-    """A simple push button for in the ribbon pane"""
+    """A simple push button for in the ribbon pane."""
 
     def __init__(self, owner, action, style):
         super().__init__(owner)
@@ -230,25 +234,25 @@ class PyShowRibbonPushButton(QToolButton):
         self.setIconSize(QSize(32, 32))
 
         self.setStyleSheet("QToolButton {"
-                               "border: 1px solid transparent;"
-                               "margin: 2px 2px 0px 2px;"
-                               "min-height:70px;"
+                           "border: 1px solid transparent;"
+                           "margin: 2px 2px 0px 2px;"
+                           "min-height:70px;"
                            "}"
                            "QToolButton:hover {"
-                               "border: 1px solid #999;"
-                               "background-color: #ffaf87;"
+                           "border: 1px solid #999;"
+                           "background-color: #ffaf87;"
                            "}"
                            "QToolButton:pressed {"
-                               "border: 1px solid #666;"
-                               "background-color: #ff9966;"
+                           "border: 1px solid #666;"
+                           "background-color: #ff9966;"
                            "}"
                            "QToolButton:checked {"
-                               "border: 1px solid transparent;"
-                               "background-color: #ffaf87;"
+                           "border: 1px solid transparent;"
+                           "background-color: #ffaf87;"
                            "}")
 
     def update_button(self):
-        """Update the button due to an external change"""
+        """Update the button due to an external change."""
         self.setText(self._action.text())
         self.setIcon(self._action.icon())
         self.setEnabled(self._action.isEnabled())
