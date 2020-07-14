@@ -288,9 +288,24 @@ class PyShowSlide(QWidget):
                                  color)
 
             # Now go through the drawing list, and execute
-            textflags = Qt.TextWordWrap | Qt.TextDontClip | Qt.TextExpandTabs
+            textflags = (Qt.TextWordWrap | Qt.TextDontClip |
+                         Qt.TextExpandTabs)
+
             for entry in drawingcommands:
+
                 task = drawingcommands[entry]
+
+                # Text alignment
+                alignment = Qt.AlignLeft
+
+                if "alignment" in task:
+                    if task["alignment"] == "right":
+                        alignment = Qt.AlignRight
+                    elif task["alignment"] == "center":
+                        alignment = Qt.AlignCenter
+                    elif task["alignment"] == "justify":
+                        alignment = Qt.AlignJustify
+
                 if task["type"] == "text":
                     painter.setFont(task["font"])
                     painter.setPen(QPen(QColor(task["color"])))
@@ -298,7 +313,7 @@ class PyShowSlide(QWidget):
                                            task["y"],
                                            task["width"],
                                            task["height"]),
-                                     textflags,
+                                     textflags | alignment,
                                      task["text"])
                 if task["type"] == "list":
                     painter.setFont(task["font"])
@@ -313,19 +328,28 @@ class PyShowSlide(QWidget):
                                                task["y"] + nextheight,
                                                task["width"],
                                                task["height"]),
-                                         textflags,
+                                         textflags | alignment,
                                          item)
 
                         if task["bullet_type"] == "c":
-                            painter.drawText(QRect(task["x"] - 100,
-                                                   task["y"] - 7 + nextheight,
+                            bullet_font = QFont(task["font"])
+                            bullet_font.setPixelSize(bullet_font.pixelSize()
+                                                     * task["bullet_size"])
+                            painter.setFont(bullet_font)
+                            painter.drawText(QRect(task["x"]
+                                                   - task["bullet_spacing"],
+                                                   task["y"]
+                                                   - (task["bullet_size"]-1)*task["font"].pixelSize()*0.7
+                                                   - task["bullet_offset"]
+                                                   + nextheight,
                                                    task["width"],
                                                    task["height"]),
-                                             Qt.TextWordWrap,
+                                             Qt.TextWordWrap | alignment,
                                              task["bullet"])
+                            painter.setFont(task["font"])
 
                         r = fm.boundingRect(0, 0, task["width"], 999999,
-                                            textflags,
+                                            textflags | alignment,
                                             item)
                         nextheight = nextheight + r.height()
 
@@ -357,6 +381,7 @@ class PyShowSlide(QWidget):
         if changes.get("fontsize"):
             font.setPixelSize(changes["fontsize"])
 
+        # TODO: Kerning does nothing. Make kerning do the opposite of default
         # Font decorations allowed:
         # i - Italic
         # b - Bold
@@ -433,6 +458,13 @@ class PyShowSlide(QWidget):
                                else "")
                          )
 
+        entry["alignment"] = (changes["alignment"]
+                              if "alignment" in changes
+                              else (entry["alignment"]
+                                    if "alignment" in entry
+                                    else None)
+                              )
+
     def change_list(self, entry, changes):
         """Change properties of a bullet list object."""
         # Properties are mostly the same as for a text object
@@ -452,6 +484,27 @@ class PyShowSlide(QWidget):
                                  if "bullet" in entry
                                  else "■")
                            )
+
+        entry["bullet_spacing"] = (changes["bullet_spacing"]
+                                   if "bullet_spacing" in changes
+                                   else (entry["bullet_spacing"]
+                                         if "bullet_spacing" in entry
+                                         else 100)
+                                   )
+
+        entry["bullet_size"] = (changes["bullet_size"]
+                                if "bullet_size" in changes
+                                else (entry["bullet_size"]
+                                      if "bullet_size" in entry
+                                      else 1)
+                                )
+
+        entry["bullet_offset"] = (changes["bullet_offset"]
+                                  if "bullet_offset" in changes
+                                  else (entry["bullet_offset"]
+                                        if "bullet_offset" in entry
+                                        else 0)
+                                  )
 
 
 def argstodict(args):
