@@ -32,9 +32,11 @@ from PyQt5.QtGui import QTextCharFormat, QFont, QSyntaxHighlighter
 
 sectionList = ["beginTemplate",
                "beginShow",
+               "resources"
                ]
 
-template_functions = {"setBackgroundColor": "",
+template_functions = {
+                      "setBackgroundColor": "",
                       "addTextBox": "text",
                       "addBulletList": "list"
                       }
@@ -42,6 +44,12 @@ show_functions = {"newSlide": "",
                   "setTextBox": "text",
                   "setBulletList": "list",
                   }
+
+resource_functions = {
+                      "image": "loadImage",
+                      "video": "loadVideo",
+                      "audio": "loadAudio"
+                      }
 
 actionList = ["pause"]
 
@@ -142,6 +150,15 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
         keyword.setFontWeight(QFont.Bold)
 
         for word in template_functions:
+            pattern = QRegularExpression("\\b" + word + "\\b")
+            rule = HighlightingRule(pattern, keyword)
+            self.highlightingRules.append(rule)
+
+        keyword = QTextCharFormat()
+        keyword.setForeground(Qt.darkYellow)
+        keyword.setFontWeight(QFont.Bold)
+
+        for word in resource_functions:
             pattern = QRegularExpression("\\b" + word + "\\b")
             rule = HighlightingRule(pattern, keyword)
             self.highlightingRules.append(rule)

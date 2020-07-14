@@ -27,11 +27,13 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import (QPainter, QColor, QLinearGradient, QFont, QPen,
                          QPixmap, QFontMetrics)
 from PyQt5.QtCore import QRect, Qt
-from Core.PyShowLanguage import template_functions, show_functions
+from Core.PyShowLanguage import (template_functions, show_functions,
+                                 resource_functions)
 
 # TODO: The code needs to indicate when text is out of bounds. Draw it anyway,
 # and give a warning I think.
 # TODO: Support for nested bullet lists
+# TODO: When the current line is a resource, show a preview of the resource!
 
 
 class PyShowPreview(QWidget):
@@ -195,7 +197,7 @@ class PyShowSlide(QWidget):
                     else:
                         if setting["name"] in template_functions:
                             objects[setting["args"][0]] = argstodict(setting["args"][1:])
-                        elif setting["name"] in show_functions:
+                        elif (setting["name"] in show_functions) or (setting["name"] in resource_functions):
                             print("ERROR: function '%s' not allowed in template" % (setting["name"]))
                         else:
                             print("ERROR: unknown template function '%s'"

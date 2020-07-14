@@ -44,6 +44,11 @@ beginTemplate('TitlePage')
 	setTextBox('Title', text='Hello!')
 }
 
+# Now add some resources to the project
+resources(){
+	image('background', 'C:\\hello.png')
+}
+
 # The slideshow begins here
 beginShow()
 {
