@@ -111,6 +111,7 @@ class PyShowParser():
             # print(parsed.dump())
             return parsed
         except ParseException as pe:
+            # TODO: Make the editor highlight the line with wrong code
             print(pe)
             return
 
