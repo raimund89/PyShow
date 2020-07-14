@@ -29,6 +29,7 @@ from PyQt5.QtCore import Qt, QRegularExpression
 from PyQt5.QtGui import QTextCharFormat, QFont, QSyntaxHighlighter
 
 # TODO: function that tells the editor which lines have errors/warnings
+# TODO: enable inline comments
 
 sectionList = ["beginTemplate",
                "beginShow",
