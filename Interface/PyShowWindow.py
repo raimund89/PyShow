@@ -54,18 +54,21 @@ class PyShowWindow(QMainWindow):
         action.triggered.connect(self.on_file_new)
         self.addAction(action)
         self._actions['file_new'] = action
+
         # Open file action
         action = QAction(self._icons.icon("file_open"), "Open...", self)
         action.setShortcut('Ctrl+O')
         action.triggered.connect(self.on_file_open)
         self.addAction(action)
         self._actions['file_open'] = action
+
         # Save file action
         action = QAction(self._icons.icon("file_save"), "Save", self)
         action.setShortcut('Ctrl+S')
         action.triggered.connect(self.on_file_save)
         self.addAction(action)
         self._actions['file_save'] = action
+
         # Print file
         action = QAction(self._icons.icon("file_print"), "Print", self)
         action.setShortcut('Ctrl+P')
