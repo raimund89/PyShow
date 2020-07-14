@@ -24,6 +24,8 @@ scripts and other files related to the presentation.
 """
 
 from PyQt5.QtWidgets import QFileDialog
+import io
+from zipfile import ZipFile
 
 
 class PyShowProject:
@@ -54,15 +56,16 @@ class PyShowProject:
             self.close()
 
             self._filename = filename
-            file = open(self._filename, 'r')
-            text = file.read()
-            file.close()
 
-            self._mainwindow.editor.setText(text)
+            with ZipFile(filename, 'r') as zip:
+                with io.TextIOWrapper(zip.open('main.script')) as script:
+                    text = script.read()
 
-            self._lastsaved = text
-            self.text_edited()
-            self.opened = True
+                    self._mainwindow.editor.setText(text)
+
+                    self._lastsaved = text
+                    self.text_edited()
+                self.opened = True
 
     def save(self):
         """Save the existing project, if a project is open."""
@@ -81,15 +84,14 @@ class PyShowProject:
         if self._filename:
             text = self._mainwindow.editor.toPlainText()
 
-            file = open(self._filename, 'w')
-            file.write(text)
-            file.close()
+            with ZipFile(self._filename, 'w') as zip:
+                zip.writestr('main.script', text)
 
-            self._lastsaved = text
-            self.text_edited()
-            self.opened = True
+                self._lastsaved = text
+                self.text_edited()
+                self.opened = True
 
-            return True
+                return True
 
         return False
 
