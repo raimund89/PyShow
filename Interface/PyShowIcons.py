@@ -25,7 +25,7 @@ Loads all necessary icons to run the application at the same time, so cleans
 up the code by not doing this in every single class where an icon is needed.
 """
 
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt6.QtGui import QIcon, QPixmap
 
 
 class PyShowIcons:
@@ -44,7 +44,7 @@ class PyShowIcons:
         """Load an icon from file."""
         self._icons[name] = QIcon()
         self._icons[name].addPixmap(QPixmap("Icons/"+name+"_32.png"),
-                                    QIcon.Normal)
+                                    QIcon.Mode.Normal)
 
     def icon(self, name):
         """Return the icon with the specified name."""

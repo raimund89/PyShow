@@ -25,8 +25,8 @@ to highlight everything in the proper way.
 from pyparsing import (Word, ParseException, alphas, nums, Forward,
                        delimitedList, Literal, Group, Optional, ZeroOrMore,
                        OneOrMore, LineEnd, SkipTo, Combine, QuotedString)
-from PyQt5.QtCore import Qt, QRegularExpression
-from PyQt5.QtGui import QTextCharFormat, QFont, QSyntaxHighlighter
+from PyQt6.QtCore import Qt, QRegularExpression
+from PyQt6.QtGui import QTextCharFormat, QFont, QSyntaxHighlighter
 
 # TODO: function that tells the editor which lines have errors/warnings
 # TODO: enable inline comments
@@ -130,8 +130,8 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
         self.highlightingRules = []
 
         keyword = QTextCharFormat()
-        keyword.setForeground(Qt.darkBlue)
-        keyword.setFontWeight(QFont.Bold)
+        keyword.setForeground(Qt.GlobalColor.darkBlue)
+        keyword.setFontWeight(QFont.Weight.Bold)
 
         for word in sectionList:
             pattern = QRegularExpression("\\b" + word + "\\b")
@@ -139,8 +139,8 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
             self.highlightingRules.append(rule)
 
         keyword = QTextCharFormat()
-        keyword.setForeground(Qt.blue)
-        keyword.setFontWeight(QFont.Bold)
+        keyword.setForeground(Qt.GlobalColor.blue)
+        keyword.setFontWeight(QFont.Weight.Bold)
 
         for word in show_functions:
             pattern = QRegularExpression("\\b" + word + "\\b")
@@ -148,8 +148,8 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
             self.highlightingRules.append(rule)
 
         keyword = QTextCharFormat()
-        keyword.setForeground(Qt.darkRed)
-        keyword.setFontWeight(QFont.Bold)
+        keyword.setForeground(Qt.GlobalColor.darkRed)
+        keyword.setFontWeight(QFont.Weight.Bold)
 
         for word in template_functions:
             pattern = QRegularExpression("\\b" + word + "\\b")
@@ -157,8 +157,8 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
             self.highlightingRules.append(rule)
 
         keyword = QTextCharFormat()
-        keyword.setForeground(Qt.darkYellow)
-        keyword.setFontWeight(QFont.Bold)
+        keyword.setForeground(Qt.GlobalColor.darkYellow)
+        keyword.setFontWeight(QFont.Weight.Bold)
 
         for word in resource_functions:
             pattern = QRegularExpression("\\b" + word + "\\b")
@@ -166,8 +166,8 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
             self.highlightingRules.append(rule)
 
         keyword = QTextCharFormat()
-        keyword.setForeground(Qt.darkGreen)
-        keyword.setFontWeight(QFont.Bold)
+        keyword.setForeground(Qt.GlobalColor.darkGreen)
+        keyword.setFontWeight(QFont.Weight.Bold)
 
         for word in actionList:
             pattern = QRegularExpression("\\b" + word + "\\b")
@@ -176,7 +176,7 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
 
         # Integers
         comment = QTextCharFormat()
-        comment.setForeground(Qt.red)
+        comment.setForeground(Qt.GlobalColor.red)
         comment.setFontItalic(True)
         pattern = QRegularExpression("[0-9]")
         rule = HighlightingRule(pattern, comment)
@@ -184,7 +184,7 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
 
         # Strings
         string = QTextCharFormat()
-        string.setForeground(Qt.darkMagenta)
+        string.setForeground(Qt.GlobalColor.darkMagenta)
         string.setFontItalic(True)
         pattern = QRegularExpression(r"(\"|').*?((?<!\\)(\1))")
         rule = HighlightingRule(pattern, string)
@@ -192,7 +192,7 @@ class PyShowEditorHighlighter(QSyntaxHighlighter):
 
         # Comments
         comment = QTextCharFormat()
-        comment.setForeground(Qt.darkGray)
+        comment.setForeground(Qt.GlobalColor.darkGray)
         comment.setFontItalic(True)
         pattern = QRegularExpression("((?<!('|\"))#)[^\n]*")
         rule = HighlightingRule(pattern, comment)

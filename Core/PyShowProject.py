@@ -23,7 +23,7 @@ extended soon to a data structure that can also contain images, multiple
 scripts and other files related to the presentation.
 """
 
-from PyQt5.QtWidgets import QFileDialog
+from PyQt6.QtWidgets import QFileDialog
 import io
 from zipfile import ZipFile
 

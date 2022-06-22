@@ -23,10 +23,10 @@ application like this, it's very useful. The code styles the ribbon according
 to the menu specified by the application window.
 """
 
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtWidgets import (QToolBar, QTabWidget, QWidget, QHBoxLayout,
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtWidgets import (QToolBar, QTabWidget, QWidget, QHBoxLayout,
                              QVBoxLayout, QLabel, QToolButton)
-from PyQt5.QtGui import QPainter, QColor
+from PyQt6.QtGui import QPainter, QColor
 
 
 class PyShowRibbon(QToolBar):
@@ -136,7 +136,7 @@ class PyShowRibbonTab(QWidget):
         # No spacing between items in the layout
         layout.setSpacing(0)
         # Don't spread the widgets over the whole length
-        layout.setAlignment(Qt.AlignLeft)
+        layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         # Add the layout to the ribbon tab
         self.setLayout(layout)
@@ -179,7 +179,7 @@ class PyShowRibbonPane(QWidget):
         vertical_widget.setLayout(vbox)
 
         label = QLabel(name)
-        label.setAlignment(Qt.AlignCenter)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         label.setStyleSheet("color: #666;margin-bottom:2px;")
 
         content = QWidget(self)
@@ -188,7 +188,7 @@ class PyShowRibbonPane(QWidget):
         vbox.addWidget(label)
 
         content_layout = QHBoxLayout()
-        content_layout.setAlignment(Qt.AlignLeft)
+        content_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
         content_layout.setSpacing(0)
         content_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -197,7 +197,7 @@ class PyShowRibbonPane(QWidget):
 
     def add_widget(self, widget):
         """Add a control to the ribbon pane."""
-        self.contentLayout.addWidget(widget, 0, Qt.AlignTop)
+        self.contentLayout.addWidget(widget, 0, Qt.AlignmentFlag.AlignTop)
 
 
 class PyShowRibbonSeparator(QWidget):
@@ -230,7 +230,7 @@ class PyShowRibbonPushButton(QToolButton):
         self.update_button()
         self._action.changed.connect(self.update_button)
 
-        self.setToolButtonStyle(style)
+        self.setToolButtonStyle(Qt.ToolButtonStyle(style))
         self.setIconSize(QSize(32, 32))
 
         self.setStyleSheet("QToolButton {"

@@ -25,7 +25,7 @@ the main window container.
 import sys
 import ctypes
 import os
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 from Interface.PyShowWindow import PyShowWindow
 
 if __name__ == '__main__':
@@ -37,4 +37,4 @@ if __name__ == '__main__':
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
 
     w = PyShowWindow(sys.argv)
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

@@ -21,8 +21,8 @@ The main PyShow window.
 Class taking care of populating the main PyShow window, as well as the menus
 and shortcut registration.
 """
-
-from PyQt5.QtWidgets import (QMainWindow, QAction, QSplitter,
+from PyQt6.QtGui import QAction
+from PyQt6.QtWidgets import (QMainWindow, QSplitter,
                              QMessageBox)
 from Interface.PyShowRibbon import PyShowRibbon, PyShowRibbonPushButton
 from Interface.PyShowIcons import PyShowIcons

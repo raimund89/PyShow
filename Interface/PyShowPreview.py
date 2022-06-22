@@ -23,10 +23,10 @@ preview accordingly.
 """
 
 import collections
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtGui import (QPainter, QColor, QLinearGradient, QFont, QPen,
+from PyQt6.QtWidgets import QWidget
+from PyQt6.QtGui import (QPainter, QColor, QLinearGradient, QFont, QPen,
                          QPixmap, QFontMetrics)
-from PyQt5.QtCore import QRect, Qt
+from PyQt6.QtCore import QRect, Qt
 from Core.PyShowLanguage import (template_functions, show_functions,
                                  resource_functions)
 
@@ -51,7 +51,7 @@ class PyShowPreview(QWidget):
     def initialize(self):
         """Initialize the preview size (and splitter width) and slide size."""
         rect = self._splitter.geometry()
-        self.setGeometry(0, 0, rect.width()*0.75, rect.height())
+        self.setGeometry(0, 0, int(rect.width()*0.75), rect.height())
 
         # Set the slide size
         self._slide.set_size(1920, 1080)
@@ -71,7 +71,7 @@ class PyShowPreview(QWidget):
             width = height*(self._slide.size()[0]/self._slide.size()[1])
             x = rect.width()/2 - width/2
 
-        return QRect(x, y, width, height)
+        return QRect(x, int(y), width, int(height))
 
     def resizeEvent(self, event=None):
         """Call when the preview needs to be resized."""
@@ -92,12 +92,12 @@ class PyShowPreview(QWidget):
 
         # Draw a rect for the background
         gradient = QLinearGradient(0, 0, 0, rect.height())
-        gradient.setColorAt(0, Qt.white)
+        gradient.setColorAt(0, Qt.GlobalColor.white)
         gradient.setColorAt(1, QColor("#FAFAFA"))
         painter.fillRect(QRect(0, 0, rect.width(), rect.height()), gradient)
 
         # Now draw a border around the slide
-        painter.setPen(Qt.lightGray)
+        painter.setPen(Qt.GlobalColor.lightGray)
         painter.drawRect(QRect(sliderect.x()-1,
                                sliderect.y()-1,
                                sliderect.width()+1,
@@ -288,31 +288,31 @@ class PyShowSlide(QWidget):
                                  color)
 
             # Now go through the drawing list, and execute
-            textflags = (Qt.TextWordWrap | Qt.TextDontClip |
-                         Qt.TextExpandTabs)
+            textflags = (Qt.TextFlag.TextWordWrap | Qt.TextFlag.TextDontClip |
+                         Qt.TextFlag.TextExpandTabs)
 
             for entry in drawingcommands:
 
                 task = drawingcommands[entry]
 
                 # Text alignment
-                alignment = Qt.AlignLeft
+                alignment = Qt.AlignmentFlag.AlignLeft
 
                 if "alignment" in task:
                     if task["alignment"] == "right":
-                        alignment = Qt.AlignRight
+                        alignment = Qt.AlignmentFlag.AlignRight
                     elif task["alignment"] == "center":
-                        alignment = Qt.AlignCenter
+                        alignment = Qt.AlignmentFlag.AlignCenter
                     elif task["alignment"] == "justify":
-                        alignment = Qt.AlignJustify
+                        alignment = Qt.AlignmentFlag.AlignJustify
 
                 if task["type"] == "text":
                     painter.setFont(task["font"])
                     painter.setPen(QPen(QColor(task["color"])))
-                    painter.drawText(QRect(task["x"],
-                                           task["y"],
-                                           task["width"],
-                                           task["height"]),
+                    painter.drawText(QRect(int(task["x"]),
+                                           int(task["y"]),
+                                           int(task["width"]),
+                                           int(task["height"])),
                                      textflags | alignment,
                                      task["text"])
                 if task["type"] == "list":
@@ -324,10 +324,10 @@ class PyShowSlide(QWidget):
                     nextheight = 0
 
                     for item in task["text"]:
-                        painter.drawText(QRect(task["x"],
-                                               task["y"] + nextheight,
-                                               task["width"],
-                                               task["height"]),
+                        painter.drawText(QRect(int(task["x"]),
+                                               int(task["y"] + nextheight),
+                                               int(task["width"]),
+                                               int(task["height"])),
                                          textflags | alignment,
                                          item)
 
@@ -336,15 +336,15 @@ class PyShowSlide(QWidget):
                             bullet_font.setPixelSize(bullet_font.pixelSize()
                                                      * task["bullet_size"])
                             painter.setFont(bullet_font)
-                            painter.drawText(QRect(task["x"]
-                                                   - task["bullet_spacing"],
-                                                   task["y"]
+                            painter.drawText(QRect(int(task["x"]
+                                                   - task["bullet_spacing"]),
+                                                   int(task["y"]
                                                    - (task["bullet_size"]-1)*task["font"].pixelSize()*0.7
                                                    - task["bullet_offset"]
-                                                   + nextheight,
-                                                   task["width"],
-                                                   task["height"]),
-                                             Qt.TextWordWrap | alignment,
+                                                   + nextheight),
+                                                   int(task["width"]),
+                                                   int(task["height"])),
+                                             Qt.TextFlag.TextWordWrap | alignment,
                                              task["bullet"])
                             painter.setFont(task["font"])
 
@@ -358,7 +358,7 @@ class PyShowSlide(QWidget):
 
         painter2 = QPainter()
         painter2.begin(self)
-        painter2.setRenderHint(QPainter.SmoothPixmapTransform, True)
+        painter2.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, True)
         painter2.drawPixmap(QRect(0,
                                   0,
                                   self.width(),

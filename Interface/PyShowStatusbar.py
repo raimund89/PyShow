@@ -24,7 +24,7 @@ in the application. Also Capslock, Numlock and Scrolllock are indicated
 
 # TODO: Indicate capslock, numlock and scrolllock
 
-from PyQt5.QtWidgets import QStatusBar
+from PyQt6.QtWidgets import QStatusBar
 
 
 class PyShowStatusbar(QStatusBar):

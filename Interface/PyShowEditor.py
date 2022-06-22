@@ -24,9 +24,9 @@ also need to trigger an update of the preview window.
 """
 
 import math
-from PyQt5.QtWidgets import QWidget, QTextEdit
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QPainter, QColor, QTextFormat, QTextCursor, QFont
+from PyQt6.QtWidgets import QWidget, QTextEdit
+from PyQt6.QtCore import Qt, QSize, QRectF
+from PyQt6.QtGui import QPainter, QColor, QTextFormat, QTextCursor, QFont
 from Core.PyShowLanguage import PyShowParser, PyShowEditorHighlighter
 
 # TODO: Further styling of both scroll bars
@@ -80,14 +80,14 @@ class PyShowEditor(QTextEdit):
 
         # Set tab stop width to 4 characters
         fnt = self.font()
-        fnt.setStyleHint(QFont.Monospace)
+        fnt.setStyleHint(QFont.StyleHint.Monospace)
         fnt.setFamily("Courier New")
         fnt.setPointSize(9)
         self.setFont(fnt)
-        self.setTabStopWidth(4*self.fontMetrics().width(' '))
+        self.setTabStopDistance(4*self.fontMetrics().horizontalAdvance(' '))
 
         # No wrapping, just extend and show a scrollbar
-        self.setLineWrapMode(QTextEdit.NoWrap)
+        self.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
 
         # Initialize the linenumber area
         self.line_number_area = PyShowEditorLineNumberArea(self)
@@ -122,7 +122,7 @@ class PyShowEditor(QTextEdit):
         """Get the ID of the first visible text block in the editor."""
         # Ask for a cursor and set it to the beginning of the document
         curs = QTextCursor(self.document())
-        curs.movePosition(QTextCursor.Start)
+        curs.movePosition(QTextCursor.MoveOperation.Start)
 
         # The geometry of the QTextEdit
         rect1 = self.viewport().geometry()
@@ -144,7 +144,7 @@ class PyShowEditor(QTextEdit):
                 return i
 
             # Otherwise move to the next block and repeat
-            curs.movePosition(QTextCursor.NextBlock)
+            curs.movePosition(QTextCursor.MoveOperation.NextBlock)
 
         return 0
 
@@ -153,7 +153,7 @@ class PyShowEditor(QTextEdit):
         # Get the painter instance for the line number area,
         # fill the line number area background and set it's font
         painter = QPainter(self.line_number_area)
-        painter.fillRect(event.rect(), Qt.lightGray)
+        painter.fillRect(event.rect(), Qt.GlobalColor.lightGray)
         painter.setFont(self.font())
 
         # Often used variables here to make the script more readable
@@ -194,11 +194,11 @@ class PyShowEditor(QTextEdit):
                 else:
                     painter.setPen(QColor("#333"))
 
-                painter.drawText(-5,
+                painter.drawText(QRectF(-5,
                                  top+1,
                                  self.line_number_area.width(),
-                                 self.fontMetrics().height(),
-                                 Qt.AlignRight,
+                                 self.fontMetrics().height()),
+                                 Qt.AlignmentFlag.AlignRight,
                                  number)
 
             # Move to the next block
@@ -226,14 +226,14 @@ class PyShowEditor(QTextEdit):
         # and apply it to the entire line under the cursor
         selection = QTextEdit.ExtraSelection()
         selection.format.setBackground(QColor("#FFFF60"))
-        selection.format.setProperty(QTextFormat.FullWidthSelection, True)
+        selection.format.setProperty(QTextFormat.Property.FullWidthSelection, True)
         selection.cursor = self.textCursor()
         selection.cursor.clearSelection()  # No multi-line selections
         self.setExtraSelections([selection])
 
     def wheelEvent(self, event):
         """Increase/decrease editor font size."""
-        if event.modifiers() & Qt.ControlModifier:
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             fnt = self.font()
             fntsize = fnt.pointSize()
 
@@ -248,7 +248,7 @@ class PyShowEditor(QTextEdit):
                 fnt.setPointSize(fntsize-1)
 
             self.setFont(fnt)
-            self.setTabStopWidth(4*self.fontMetrics().width(' '))
+            self.setTabStopDistance(4*self.fontMetrics().horizontalAdvance(' '))
             self.updatelinenumbers()
         else:
             super().wheelEvent(event)
@@ -259,7 +259,7 @@ class PyShowEditor(QTextEdit):
 
     def keyPressEvent(self, event):
         """If the user uses TAB, indent lines instead of replace by a TAB."""
-        if event.key() != Qt.Key_Tab and event.key() != Qt.Key_Backtab:
+        if event.key() != Qt.Key.Key_Tab and event.key() != Qt.Key.Key_Backtab:
             super().keyPressEvent(event)
             return
 
@@ -269,15 +269,15 @@ class PyShowEditor(QTextEdit):
         # If nothing is selected, just add or remove a TAB at the beginning
         # of the line
         if not cursor.hasSelection():
-            cursor.movePosition(QTextCursor.StartOfBlock,
-                                QTextCursor.MoveAnchor)
+            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock,
+                                QTextCursor.MoveOperation.MoveAnchor)
 
-            if event.key() == Qt.Key_Tab:
+            if event.key() == Qt.Key.Key_Tab:
                 cursor.insertText("\t")
-            elif event.key() == Qt.Key_Backtab:
+            elif event.key() == Qt.Key.Key_Backtab:
                 # Select first character to see if it is a TAB
-                cursor.movePosition(QTextCursor.NextCharacter,
-                                    QTextCursor.KeepAnchor)
+                cursor.movePosition(QTextCursor.MoveOperation.NextCharacter,
+                                    QTextCursor.MoveOperation.KeepAnchor)
 
                 if cursor.selectedText() == "\t":
                     cursor.removeSelectedText()
@@ -292,10 +292,10 @@ class PyShowEditor(QTextEdit):
         if start_pos > end_pos:
             start_pos, end_pos = end_pos, start_pos
 
-        cursor.setPosition(end_pos, QTextCursor.MoveAnchor)
+        cursor.setPosition(end_pos, QTextCursor.MoveOperation.MoveAnchor)
         end_block = cursor.block().blockNumber()
 
-        cursor.setPosition(start_pos, QTextCursor.MoveAnchor)
+        cursor.setPosition(start_pos, QTextCursor.MoveOperation.MoveAnchor)
         start_block = cursor.block().blockNumber()
 
         # Let all the changes be in one editing block, so one single
@@ -303,36 +303,36 @@ class PyShowEditor(QTextEdit):
         cursor.beginEditBlock()
 
         for _ in range(0, end_block-start_block+1):
-            cursor.movePosition(QTextCursor.StartOfBlock,
-                                QTextCursor.MoveAnchor)
+            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock,
+                                QTextCursor.MoveOperation.MoveAnchor)
 
-            if event.key() == Qt.Key_Tab:
+            if event.key() == Qt.Key.Key_Tab:
                 cursor.insertText("\t")
-            elif event.key() == Qt.Key_Backtab:
+            elif event.key() == Qt.Key.Key_Backtab:
                 if not cursor.atBlockEnd():
                     # Select first character to see if it is a TAB
-                    cursor.movePosition(QTextCursor.NextCharacter,
-                                        QTextCursor.KeepAnchor)
+                    cursor.movePosition(QTextCursor.MoveOperation.NextCharacter,
+                                        QTextCursor.MoveOperation.KeepAnchor)
 
                     print(cursor.selectedText())
                     if cursor.selectedText() == "\t":
                         cursor.removeSelectedText()
 
-            cursor.movePosition(QTextCursor.NextBlock,
-                                QTextCursor.MoveAnchor)
+            cursor.movePosition(QTextCursor.MoveOperation.NextBlock,
+                                QTextCursor.MoveOperation.MoveAnchor)
 
         cursor.endEditBlock()
 
         # Now we are going to completely select all the lines that
         # were changed from beginning to end
 
-        cursor.setPosition(start_pos, QTextCursor.MoveAnchor)
-        cursor.movePosition(QTextCursor.StartOfBlock, QTextCursor.MoveAnchor)
+        cursor.setPosition(start_pos, QTextCursor.MoveOperation.MoveAnchor)
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock, QTextCursor.MoveOperation.MoveAnchor)
 
         while cursor.block().blockNumber() < end_block:
-            cursor.movePosition(QTextCursor.NextBlock, QTextCursor.KeepAnchor)
+            cursor.movePosition(QTextCursor.MoveOperation.NextBlock, QTextCursor.MoveOperation.KeepAnchor)
 
-        cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveOperation.KeepAnchor)
 
         # Finally, set the new cursor
         self.setTextCursor(cursor)
@@ -349,7 +349,7 @@ class PyShowEditorLineNumberArea(QWidget):
     def get_width(self):
         """Calculate the width of the line number area."""
         digits = math.floor(math.log10(self._editor.document().blockCount()))+1
-        return 25 + self._editor.fontMetrics().width('9') * digits
+        return 25 + self._editor.fontMetrics().horizontalAdvance('9') * digits
 
     def sizeHint(self):
         """Return the size of the line number area."""
